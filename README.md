@@ -1,5 +1,5 @@
-#Debrise
-This is an ecommerce website which basically deal in hamper's items
+#Smart
+This is the backend for restaurant management..
 sudo nano /etc/apache2/sites-available/000-default.conf
 
 <VirtualHost *:80>
