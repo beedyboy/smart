@@ -8,8 +8,6 @@ class Beedy
 	function __construct()
 	{
 
-
-
 	}
 public function PasswordDecider() {
 	$chars = "01012323453456456789";
@@ -86,6 +84,19 @@ public function minusProduct($id, $qty){
 
 
 
+
+public function getColById($obj,$id, $field)
+{
+
+	//'hall', 'id', $_POST['hall_id'], 1
+			//$Product= new Product('products');
+ return $obj->findById($id)->$field;
+
+}
+
+
+
+
 public  function getCompanyId()
 {
 	return  $org_id = Auth::auth('org_id');
@@ -115,11 +126,29 @@ public  function TotalCount()
 }
 
 
-public function totalUser()
+public function totalUser($shopId)
 {
 
-// return  $this->_User->count();
-// return count( $this->_User);
+$User = new User('users');
+$ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
+ 		$qUser = $User->findWhere('users', $ary);
+ return count( $qUser);
+}
+public function totalProduct($shopId)
+{
+
+$Product = new Product('products');
+$ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
+ 		$qUser = $Product->findWhere('products', $ary);
+ return count( $qUser);
+}
+public function totalSupplier($shopId)
+{
+
+$Supplier = new Supplier('suppliers');
+$ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
+ 		$qUser = $Supplier->findWhere('suppliers', $ary);
+ return count( $qUser);
 }
 
 
@@ -158,11 +187,7 @@ $this->_Setting = $newSetting->findWhere('settings',$setArray);*/
 // $this->_Setting = $newSetting->findWhere('settings',['conditions'=> 'org_id = ?', 'bind' => [$org_id] ]);
 
 
-/*$User = new User('users');
-$ary = [ 'conditions'=> 'org_id = ?', 'bind' => [$org_id]  ];
-
- 		$this->_ary= $ary;
- 		$this->_User = $User->findWhere('users', $ary);
+/*
 	*/
 
 /*
