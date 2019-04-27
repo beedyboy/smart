@@ -1,4 +1,37 @@
-<?php 	 
+<?php
+
+  	header('Access-Control-Allow-Origin: http://192.168.43.215:3000');
+  	header('Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
+  	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+ 	   header("Content-type: application/json");
+
+//header('Access-Control-Allow-Origin: *');
+//header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
+//header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+// 	   header("Content-type: application/json");
+//$method = $_SERVER['REQUEST_METHOD'];
+//if($method == "OPTIONS") {
+//    die();
+//}
+
+//if (isset($_SERVER["HTTP_ORIGIN"]) === true) {
+//	$origin = $_SERVER["HTTP_ORIGIN"];
+//	$allowed_origins = array(
+//		"http://public.app.moxio.com",
+//		"https://foo.app.moxio.com",
+//		"https://lorem.app.moxio.com"
+//	);
+//	if (in_array($origin, $allowed_origins, true) === true) {
+//		header('Access-Control-Allow-Origin: ' . $origin);
+//		header('Access-Control-Allow-Credentials: true');
+//		header('Access-Control-Allow-Methods: POST');
+//		header('Access-Control-Allow-Headers: Content-Type');
+//	}
+//	if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+//		exit; // OPTIONS request wants only the policy, we can stop here
+//	}
+//}
+
 // ini_set('display_errors',1); ini_set('display_startup_errors',1); error_reporting(-1);
 // error_reporting(E_ALL);
 // ini_set('display_errors', 1);
@@ -21,7 +54,7 @@
  *
  */
 define('ENVIRONMENT', 'development');
- 
+
 if (defined('ENVIRONMENT'))
 {
 	switch (ENVIRONMENT)
@@ -43,17 +76,17 @@ if (defined('ENVIRONMENT'))
 }
 
 define('DS', DIRECTORY_SEPARATOR);
- 
+
 define('ROOT', dirname(__FILE__));
- 
+
 //load configuration and helper functions
- 
+
 
 require_once(ROOT . DS . 'config' . DS . 'config.php');
 
 require_once(ROOT . DS . 'app' . DS . 'lib' . DS . 'helpers' . DS . 'functions.php');
 
- 
+
 /*
 | -------------------------------------------------------------------
 | AUTO-LOADER
@@ -115,34 +148,34 @@ spl_autoload_register('autoload');
 
 
 session_start();
- 
+
 /*
 | -------------------------------------------------------------------
 | POS
 | -------------------------------------------------------------------
 | This file loads the default software settings.
-| 
+|
 |
 | -------------------------------------------------------------------
 */
- 
- 
-//$newSetting = new Application('applications'); 
- 
-//define('PAGE_LIMIT', $newSetting->findFirst()->pageLimit); 
+
+
+//$newSetting = new Application('applications');
+
+//define('PAGE_LIMIT', $newSetting->findFirst()->pageLimit);
 
  # check if a session does not exist and the cookie exist
  # otherwise take to login page
 
 
 // if(!Session::exists(CURRENT_USER_SESSION_NAME) && Cookie::exists(REMEMBER_ME_COOKIE_NAME)):
- 
+
 // 	#login from cookie
-// 	  Admin::loginAdminFromCookie(); 
-	 
+// 	  Admin::loginAdminFromCookie();
+
 // endif;
 
- 
+
 	Router::init();
 
 /*if(!Session::exists(CURRENT_USER_SESSION_NAME) && Cookie::exists(REMEMBER_ME_COOKIE_NAME))
@@ -151,5 +184,3 @@ session_start();
 	User::loginUserFromCookie();
 }
 dnd(Session::get(CURRENT_USER_SESSION_NAME));*/
-
- 

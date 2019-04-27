@@ -103,7 +103,7 @@ public function update(){
 							{
 								$fields = [
 										'name' => $number,
-										'hid' => $hid 
+										'hid' => $hid
 							];
 									$send = $this->HTable->update($fields, (int)$id);
 							if($send):
@@ -139,3 +139,12 @@ public function update(){
 
 
 }
+//
+//RewriteEngine On
+//
+//RewriteCond %{REQUEST_FILENAME} !-d
+//RewriteCond %{REQUEST_FILENAME} !-f
+//RewriteCond $1 !^(config|core|sms|resources|robots\.txt)
+//
+//
+//RewriteRule ^(.+)$ index.php?url=$1 [QSA,L]

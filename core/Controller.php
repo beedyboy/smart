@@ -1,6 +1,6 @@
 <?php
 /**
-* 
+*
 */
 class Controller extends Cmt
 {
@@ -15,13 +15,17 @@ class Controller extends Cmt
 		$this->_action = $action;
 
 		$this->view  = new View();
-		$this->validate  = new Validate(); 
-		
-		
-  	header('Access-Control-Allow-Origin: *');
-  	header('Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
-  	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
- 	   header("Content-type: application/json");
+		$this->validate  = new Validate();
+
+
+//  	header('Access-Control-Allow-Origin: *');
+//  	header('Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
+//  	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+// 	   header("Content-type: application/json");
+//	     $method = $_SERVER['REQUEST_METHOD'];
+//    if($method == "OPTIONS") {
+//        die();
+//    }
 	}
 
 	protected function load_model($model)
@@ -31,7 +35,7 @@ class Controller extends Cmt
 		if(class_exists($model))
 		{
 			$this->{$model} = new $model(strtolower($model));
-		
+
 		}
 		else{
 			die("This model  $model does not exist");

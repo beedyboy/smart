@@ -27,7 +27,7 @@ define('DB_USER', 'root'); // database user
 
 define('DB_PASSWORD', '');
  // database password
-define('DB_HOST', 'localhost'); //database host ***use IP address to avoid DNS look up on live server
+define('DB_HOST', '127.0.0.1'); //database host ***use IP address to avoid DNS look up on live server
 
 
 
