@@ -131,7 +131,7 @@ public function totalUser($shopId)
 
 $User = new User('users');
 $ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
- 		$qUser = $User->findWhere('users', $ary);
+ 		$qUser = $User->find($ary);
  return count( $qUser);
 }
 public function totalProduct($shopId)
@@ -139,16 +139,15 @@ public function totalProduct($shopId)
 
 $Product = new Product('products');
 $ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
- 		$qUser = $Product->findWhere('products', $ary);
+ 		$qUser = $Product->find($ary);
  return count( $qUser);
 }
 public function totalSupplier($shopId)
 {
-
 $Supplier = new Supplier('suppliers');
 $ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
- 		$qUser = $Supplier->findWhere('suppliers', $ary);
- return count( $qUser);
+ 		$qUser = $Supplier->find($ary);
+ return count($qUser);
 }
 
 

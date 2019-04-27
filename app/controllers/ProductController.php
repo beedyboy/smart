@@ -59,6 +59,10 @@ public function save(){
 	$userId = $Query->id;
 
 	endif;
+	$result['token'] = $token;
+ $result['userid'] = $userId;
+//  echo json_encode($result);
+//	die();
 
 			$fields = [
 										'product_name' => $product_name,
