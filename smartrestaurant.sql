@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Apr 25, 2019 at 05:33 PM
+-- Generation Time: Apr 27, 2019 at 02:16 PM
 -- Server version: 5.7.25-0ubuntu0.18.04.2
 -- PHP Version: 7.2.17-1+ubuntu18.04.1+deb.sury.org+3
 
@@ -37,14 +37,6 @@ CREATE TABLE `acquisitions` (
   `updated_by` int(11) DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `acquisitions`
---
-
-INSERT INTO `acquisitions` (`id`, `shopId`, `itemId`, `qty`, `kitchen`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES
-(2, 1, 4, '7', 'Continental', 5, '2019-04-17 14:47:41', 5, '2019-04-17 16:54:00'),
-(3, 1, 6, '3', 'Continental', 5, '2019-04-17 14:48:32', 5, '2019-04-17 15:56:28');
 
 -- --------------------------------------------------------
 
@@ -81,17 +73,6 @@ CREATE TABLE `halls` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---
--- Dumping data for table `halls`
---
-
-INSERT INTO `halls` (`id`, `shopId`, `name`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Green', '2019-04-07 17:12:35', NULL),
-(2, 1, 'Yellow', '2019-04-07 17:12:35', NULL),
-(3, 1, 'Blue', '2019-04-07 20:37:39', '2019-04-07 20:37:39'),
-(4, 1, 'Black', '2019-04-07 21:02:33', '2019-04-07 21:02:33'),
-(5, 1, 'Pink', '2019-04-08 16:25:10', '2019-04-08 07:25:29');
-
 -- --------------------------------------------------------
 
 --
@@ -104,17 +85,6 @@ CREATE TABLE `htables` (
   `hid` int(11) NOT NULL,
   `name` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `htables`
---
-
-INSERT INTO `htables` (`id`, `shopId`, `hid`, `name`) VALUES
-(58, 1, 2, 'A'),
-(59, 1, 1, 'B'),
-(60, 1, 3, 'B'),
-(61, 1, 2, 'C'),
-(62, 1, 4, 'A');
 
 -- --------------------------------------------------------
 
@@ -135,15 +105,6 @@ CREATE TABLE `orderdetails` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `orderdetails`
---
-
-INSERT INTO `orderdetails` (`id`, `shopId`, `invoice`, `qty`, `price`, `total`, `product_id`, `vat`, `discount`, `created_at`, `updated_at`) VALUES
-(1, 1, 'invoice', '4', '3', '12', 5, NULL, NULL, '2019-04-25 15:53:31', '2019-04-25 15:53:31'),
-(2, 1, 'invoice', '2', '20', '40', 2, NULL, NULL, '2019-04-25 15:53:28', '2019-04-25 15:53:28'),
-(3, 1, 'invoice', '2', '15', '30', 4, NULL, NULL, '2019-04-25 15:53:45', '2019-04-25 15:53:45');
 
 -- --------------------------------------------------------
 
@@ -177,18 +138,6 @@ CREATE TABLE `products` (
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---
--- Dumping data for table `products`
---
-
-INSERT INTO `products` (`id`, `shopId`, `product_name`, `kitchen`, `price`, `added_qty`, `qty`, `created_at`, `created_by`, `updated_at`, `updated_by`) VALUES
-(1, 1, 'Coke', 'Bar', '5', '0', '0', '2019-04-15 18:56:25', 5, NULL, NULL),
-(2, 1, 'Jollof', 'Continental', '20', '0', '10', '2019-04-16 07:45:46', 5, '2019-04-16 11:24:38', 5),
-(3, 1, 'Banku', 'Local', '6', '0', '1', '2019-04-16 07:48:09', 5, '2019-04-16 11:09:30', 5),
-(4, 1, 'Plain Rice', 'Continental', '15', '0', '9', '2019-04-16 07:49:30', 5, NULL, NULL),
-(5, 1, 'Fanta', 'Bar', '3', '4', '10', '2019-04-16 09:08:49', 5, '2019-04-17 23:03:53', 5),
-(6, 1, 'Fried Rice', 'Continental', '25', '3', '1', '2019-04-16 11:08:36', 5, '2019-04-17 23:05:35', 5);
-
 -- --------------------------------------------------------
 
 --
@@ -210,17 +159,6 @@ CREATE TABLE `purchases` (
   `updated_by` int(11) DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `purchases`
---
-
-INSERT INTO `purchases` (`id`, `shopId`, `item_name`, `cost_price`, `qty`, `added_qty`, `transaction_type`, `supplierId`, `purchased_date`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES
-(2, 1, 'Chicken', '600', '6', NULL, 'Cash', 1, '04/08/2019', 5, '2019-04-16 23:05:13', NULL, NULL),
-(3, 1, 'Rice', '240', '3', NULL, 'Cash', 1, '04/10/2019', 5, '2019-04-17 14:46:18', NULL, NULL),
-(4, 1, 'Coke', '400', '12', NULL, 'Cash', 1, '04/10/2019', 5, '2019-04-17 14:46:32', NULL, NULL),
-(5, 1, 'Banku', '400', '25', NULL, 'Cash', 1, '04/10/2019', 5, '2019-04-17 14:46:48', NULL, NULL),
-(6, 1, 'Rush', '400', '31', NULL, 'Cash', 2, '04/11/2019', 5, '2019-04-17 14:47:02', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -261,16 +199,6 @@ CREATE TABLE `seats` (
   `shopId` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---
--- Dumping data for table `seats`
---
-
-INSERT INTO `seats` (`id`, `tid`, `name`, `shopId`) VALUES
-(1, 58, '1', 1),
-(2, 60, '1', 1),
-(3, 61, '2', 1),
-(4, 62, '1', 1);
-
 -- --------------------------------------------------------
 
 --
@@ -292,7 +220,7 @@ CREATE TABLE `shops` (
 --
 
 INSERT INTO `shops` (`id`, `shopName`, `address`, `logo`, `shopEmail`, `shopPhoneNum`, `version`) VALUES
-(1, 'Beedy\'s Place', 'No 14 Street, East Legon', '', 'mangos@gmail.com', '0553135336 | 0543977486', 'Vs-W2.0.0.');
+(1, 'Mango\'s Place', 'No 14 Street, East Legon', '', 'mangos@gmail.com', '0553135336 | 0543977486', 'Vs-W2.0.0.');
 
 -- --------------------------------------------------------
 
@@ -309,15 +237,6 @@ CREATE TABLE `suppliers` (
   `contact_person` varchar(100) NOT NULL,
   `note` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `suppliers`
---
-
-INSERT INTO `suppliers` (`id`, `shopId`, `supplier_name`, `supplier_address`, `supplier_contact`, `contact_person`, `note`) VALUES
-(1, 1, 'Mercy Gold store', 'iyaganku GRA, Ibadan', '04840474940', 'Aunty Anu', 'hello'),
-(2, 1, 'Mike  Juice guy', 'East Legon', '0244199015', 'Mike', 'Gallon sales'),
-(3, 1, 'Chidera Feedera', 'Ebute Meje', '95050594', 'Chidi', 'feeds');
 
 -- --------------------------------------------------------
 
@@ -349,10 +268,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `shopId`, `fullname`, `acc_email`, `username`, `acc_password`, `acc_status`, `token`, `acc_question`, `acc_answer`, `acc_phone`, `position`, `role`, `created_at`, `updated_at`) VALUES
 (1, 1, 'Akinniyi Bolade', NULL, 'beedyboy', '$2y$10$uxr1QgkRid6i5Ka2d7rXY.nW.FMj0W2/touepym/nXj9vfG4cMrqe', 'Pending', NULL, NULL, NULL, NULL, 'Admin', 'addSales,editSales,delSales,addUser,editUser,addMenu,editMenu,addSupplier,editSupplier,addHall,editHall,editSeat,delSeat', '2019-04-05 11:15:11', '2019-04-05 11:15:11'),
-(2, 1, 'Sydney Ankrah', NULL, 'sydney', '$2y$10$DQIfPoq12HUp3ItVb.UcFOzxXVxrw5IBDxryPBhuAZjlbJlt9/5vG', 'Pending', NULL, NULL, NULL, NULL, 'Supervisor', 'addSales,editSales,delSales,addUser,editUser,addMenu,editMenu,editSupplier,delSupplier,editHall,delHall,editSeat,delSeat', '2019-04-05 12:06:28', '2019-04-05 12:06:28'),
-(3, 1, 'Ogundipe Aderinde', NULL, 'ogun', '$2y$10$QA4F7eQ0mBZJtjGX0r9hVumGH/Ol0acA49/hT4N8sWvtewEIFb6Ui', 'Pending', '88beee42b647152d34d632aa5e3babae', NULL, NULL, NULL, 'Waiter', 'addSales,editSales,addUser,editUser,addMenu,editMenu,delSupplier,delHall,editSeat', '2019-04-05 12:13:37', '2019-04-05 12:13:37'),
-(4, 1, 'Joseph Kayode', NULL, 'kayode', '$2y$10$U2s5gifYwrdbYOJfiwEYYOKRNhutKPdNCEh4KLFuTGr4KVQ5gcv.m', 'Pending', NULL, NULL, NULL, NULL, 'Cashier', 'addSales,delSales,addUser,delMenu,editMenu,addSupplier,delSupplier,editHall,editSeat,addSeat,delSeat', '2019-04-12 14:47:58', '2019-04-12 14:47:58'),
-(5, 1, 'Abraham Olori nla', NULL, 'abraham', '$2y$10$S5FvPJUtpnkHhcv48.edKuuBLKsg7qWxcbJKGZsuv9xxLYYGJwLM6', 'Pending', 'ddbf1cbf157434aaf11dab1a525b9d12', NULL, NULL, NULL, 'Mobile Attendant', 'editSales,delSales,addUser,delUser,addMenu,editSupplier,delSupplier,addHall,delHall,editSeat,delSeat', '2019-04-13 06:46:03', '2019-04-13 06:46:03');
+(2, 1, 'Sydney Ankrah', NULL, 'sydney', '$2y$10$DQIfPoq12HUp3ItVb.UcFOzxXVxrw5IBDxryPBhuAZjlbJlt9/5vG', 'Pending', '628311bde53aff35b79677260ec17321', NULL, NULL, NULL, 'Supervisor', 'addSales,editSales,delSales,addUser,editUser,addMenu,editMenu,editSupplier,delSupplier,editHall,delHall,editSeat,delSeat', '2019-04-05 12:06:28', '2019-04-05 12:06:28');
 
 -- --------------------------------------------------------
 
@@ -483,17 +399,17 @@ ALTER TABLE `acquisitions`
 -- AUTO_INCREMENT for table `halls`
 --
 ALTER TABLE `halls`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `htables`
 --
 ALTER TABLE `htables`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `orderdetails`
 --
 ALTER TABLE `orderdetails`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT for table `products`
 --
@@ -513,7 +429,7 @@ ALTER TABLE `sales`
 -- AUTO_INCREMENT for table `seats`
 --
 ALTER TABLE `seats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `shops`
 --
@@ -523,7 +439,7 @@ ALTER TABLE `shops`
 -- AUTO_INCREMENT for table `suppliers`
 --
 ALTER TABLE `suppliers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `users`
 --

@@ -56,6 +56,7 @@ define('SITE_TITLE', 'SMART RESTAURANT'); //this will be used if no title is set
 
 //
 define('base_url', '/smart/');
+define('origin', 'http://192.168.43.215:3000');
 /*
 |--------------------------------------------------------------------------
 | Display Debug backtrace
