@@ -73,7 +73,7 @@ public function minusProduct($id, $qty){
 
 									$fields = [ 'qty' => $updQty ];
 
-									$send = $Product->update($fields, (int)$id);
+			return						$send = $Product->update($fields, (int)$id);
 
 							}
 
@@ -87,14 +87,40 @@ public function minusProduct($id, $qty){
 
 public function getColById($obj,$id, $field)
 {
-
-	//'hall', 'id', $_POST['hall_id'], 1
-			//$Product= new Product('products');
  return $obj->findById($id)->$field;
-
+}
+public function loadTblCond2($obj,$params)
+{
+ return $obj->find($params);
 }
 
 
+public function plusProduct($id, $qty){
+
+	 $result = array();
+$Product = new Product('products');
+		 $pQty = $Product->findById((int)$id)->qty;
+
+$updQty =  $pQty + $qty; // this means 5 - 2
+
+		if($updQty >= 0) {
+
+									$fields = [ 'qty' => $updQty ];
+
+			return						$send = $Product->update($fields, (int)$id);
+
+							}
+
+
+}
+
+public function getColTotalByInvoice($obj,$invoice, $field)
+{
+	$total = 0;
+	$discount = 0;
+	$ary = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice]  ];
+ return $obj->find($id);
+}
 
 
 public  function getCompanyId()
@@ -173,21 +199,6 @@ return count( $total);
 
 }
 
-/*$org_id = Auth::auth('org_id');
-$newSystem = new Software('softwares');
-$this->_Software = $newSystem->findById($org_id);
-*/
-
-/*
- $newSetting = new Setting('Settings');
-
-$setArray = [ 'conditions'=> 'org_id = ?', 'bind' => [$org_id]  ];
-$this->_Setting = $newSetting->findWhere('settings',$setArray);*/
-// $this->_Setting = $newSetting->findWhere('settings',['conditions'=> 'org_id = ?', 'bind' => [$org_id] ]);
-
-
-/*
-	*/
 
 /*
 DELIMITER $$

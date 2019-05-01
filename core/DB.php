@@ -325,6 +325,60 @@ public function delete($table, $id=1)
 |****************************************************
 |
 */
+
+public function bulkDelete($table, $params=[])
+{
+	$conditionString = '';
+	$bind = [];
+
+
+//condition
+if(isset($params['conditions']))
+{
+	//check if conditions was passed as an array or not
+	if(is_array($params['conditions']))
+	{
+		foreach ($params['conditions'] as $condition)
+		{
+			# code...
+			$conditionString .= ' ' . $condition . ' AND';
+		}
+
+		$conditionString = trim($conditionString);
+		$conditionString = rtrim($conditionString, ' AND');
+
+	} else
+	{
+		$conditionString = $params['conditions'];
+	}
+
+	if($conditionString != '')
+	{
+
+		$conditionString = ' WHERE ' .$conditionString;
+	}
+}
+
+//bind
+//checks if condition params was passed
+if(array_key_exists('bind', $params))
+{
+	$bind = $params['bind'];
+}
+
+
+$sql = "DELETE FROM {$table} {$conditionString} ";
+
+if(!$this->query($sql, $bind)->error())
+		 {
+		 	return true;
+		 }
+
+		 return false;
+	 
+}
+
+
 public function results()
 {
 	return $this->_result;

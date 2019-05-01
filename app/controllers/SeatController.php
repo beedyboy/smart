@@ -38,6 +38,30 @@ public function getTableByHall()
 
 }
 
+
+public function getSeatByTable()
+{
+
+		$data = [];
+	$out = array('error' => false);
+	$shopId= $_GET['shopId'];
+	$tid= $_GET['tid'];
+		$params  = ['conditions'=> ['shopId = ? ', 'tid = ?'], 'bind' => [$shopId,$tid] ];
+
+			//find all tables with shopId
+
+			$seats = $this->Seat->find($params);
+
+
+			$out['data'] = $seats;
+
+	   echo json_encode($out);
+
+  	die();
+
+}
+
+
 public function list()
 {
 	$data = [];
@@ -99,7 +123,7 @@ public function save(){
 
 
 }
- 
+
 
 
 public function update(){
