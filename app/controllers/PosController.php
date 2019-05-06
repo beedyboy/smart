@@ -53,22 +53,6 @@ $out['data'] = $Waiters;
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  public function getCartItem()
 {
 
@@ -76,16 +60,17 @@ $out['data'] = $Waiters;
 	$Orderdetail = new Orderdetail('orderdetails');
 	$Product = new Product('products');
 	$data = [];
-	$out = array('error' => false);
 		$shopId= $_GET['shopId'];
 		$invoice= $_GET['invoice'];
+	$out = array('error' => false, 'invoice'=>$invoice);
 		$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
 
  $Orders =  $Orderdetail->find($params);
-
+$i = 1;
 	foreach($Orders as $Order):
 
 	$row = array(
+		'key'=>'key'.$i,
 		'id'=>$Order->id,
 		'product_id'=> $Order->product_id,
 		'product_name'=> $Product->findById($Order->product_id)->product_name,
@@ -99,6 +84,7 @@ $out['data'] = $Waiters;
 
 	$data[]=$row;
 
+	$i+=1;
 
 	endforeach;
  	$out['data'] = $data;
@@ -149,13 +135,6 @@ $sumDiscount +$Order->discount;
   	die();
 
 }
-
-
-
-
-
-
-
 
 
 
@@ -251,83 +230,85 @@ else {
 }
   echo json_encode($result);
 }
-
-public function update(){
-
-	 $result = array();
-	$data = json_decode(file_get_contents("php://input"), TRUE);
-	$User = new User('users');
- $Query  = $User->findByToken($data['token']);
-
-	if($Query):
-	$userId = $Query->id;
-
-	endif;
-
-	  $itemId = $data['itemId'];
-	  $kitchen = $data['kitchen'];
-	  $qty = $data['qty'];
-	  $id = $data['id'];
-
-			$Allocation = $this->Acquisition->findById((int)$id);
-		 $Purchase = new Purchase('purchases');
-		 $item_quantity = $Purchase->findById((int)$itemId)->qty;
-			//if i have 2 items before and wanna make it five
-			//updated qty should be 3
-			//get value from acquisition and substract from new value
-$updQty =  (int)($qty) - (int)($Allocation->qty); // this means 5 - 2
-
-		if($updQty <= $item_quantity) {
-
-
-	$newQuantity = (int)$item_quantity - (int)$updQty;
-
-				 		if($Allocation->itemId != $itemId || $Allocation->qty != $qty || $Allocation->kitchen != $kitchen )
-							{
-									$fields = [
-										'itemId' => $itemId,
-										'qty' => $qty,
-										'kitchen' => $kitchen,
-										'updated_by' => $userId,
-										'updated_at' => '',
-							];
-											$field2 = ['qty' => $newQuantity ];
-
-							$send2 = $Purchase->update(['qty' => $newQuantity], (int)$itemId);
-
-									$send = $this->Acquisition->update($fields, (int)$id);
-							if($send):
-
-								$result['status'] = "success";
-								$result['msg']  =   'Item allocation has been updated successfully';
-								//$result['msg']  =   $item_quantity.'-'.$updQty.'='.$newQuantity;
-
-							else:
-
-								$result['status'] = "db_error";
-								$result['msg'] = "Error: Item allocation was not updated. Please try again later";
-							endif;
-							}
-							else{
-									$result['status'] = "same";
-								$result['msg']  =   'No changes made';
-							}
-		}
-
-else {
-		$result['status'] = "error";
-								$result['msg'] = "Error: Allocated quantity can not be more than item quantity in stock";
-
-}
-  echo json_encode($result);
-
-
-}
-
-
-
-
-
+//
+//public function update(){
+//
+//	 $result = array();
+//	$data = json_decode(file_get_contents("php://input"), TRUE);
+//	$User = new User('users');
+// $Query  = $User->findByToken($data['token']);
+//
+//	if($Query):
+//	$userId = $Query->id;
+//
+//	endif;
+//
+//	  $itemId = $data['itemId'];
+//	  $kitchen = $data['kitchen'];
+//	  $qty = $data['qty'];
+//	  $id = $data['id'];
+//
+//			$Allocation = $this->Acquisition->findById((int)$id);
+//		 $Purchase = new Purchase('purchases');
+//		 $item_quantity = $Purchase->findById((int)$itemId)->qty;
+//			//if i have 2 items before and wanna make it five
+//			//updated qty should be 3
+//			//get value from acquisition and substract from new value
+//$updQty =  (int)($qty) - (int)($Allocation->qty); // this means 5 - 2
+//
+//		if($updQty <= $item_quantity) {
+//
+//
+//	$newQuantity = (int)$item_quantity - (int)$updQty;
+//
+//				 		if($Allocation->itemId != $itemId || $Allocation->qty != $qty || $Allocation->kitchen != $kitchen )
+//							{
+//									$fields = [
+//										'itemId' => $itemId,
+//										'qty' => $qty,
+//										'kitchen' => $kitchen,
+//										'updated_by' => $userId,
+//										'updated_at' => '',
+//							];
+//											$field2 = ['qty' => $newQuantity ];
+//
+//							$send2 = $Purchase->update(['qty' => $newQuantity], (int)$itemId);
+//
+//									$send = $this->Acquisition->update($fields, (int)$id);
+//							if($send):
+//
+//								$result['status'] = "success";
+//								$result['msg']  =   'Item allocation has been updated successfully';
+//								//$result['msg']  =   $item_quantity.'-'.$updQty.'='.$newQuantity;
+//
+//							else:
+//
+//								$result['status'] = "db_error";
+//								$result['msg'] = "Error: Item allocation was not updated. Please try again later";
+//							endif;
+//							}
+//							else{
+//									$result['status'] = "same";
+//								$result['msg']  =   'No changes made';
+//							}
+//		}
+//
+//else {
+//		$result['status'] = "error";
+//								$result['msg'] = "Error: Allocated quantity can not be more than item quantity in stock";
+//
+//}
+//  echo json_encode($result);
+//
+//
+//}
+//
+//
+//
+//
+//
+//
+//
 
 public function updateFinishedProduct(){
 
@@ -385,15 +366,11 @@ public function updateFinishedProduct(){
 
 
 
-public function getOrderByInvoice()
-{
-
-}
 public function saveOrder(){
 
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
-
+$date = date("Y-m-d");
 	  $invoice = $data['invoice'];
 	  $shopId = $data['shopId'];
 	  $kitchen = $data['kitchen'];
@@ -428,7 +405,7 @@ $discount += $Details->discount;
 endforeach;
 	$balance = 	$amount;
 //productDetails
-
+if($type == 'Dine-In'):
 									$fields = [
 																					'shopId' => $shopId,
 																					'invoice_number' => $invoice,
@@ -436,6 +413,7 @@ endforeach;
 																					'discount' => $discount,
 																					'tid' => $table,
 																					'sid' => $seat,
+																					'period' => $date,
 																					'waiter' => $waiter,
 																					'balance' => $balance,
 																					'ord_type' => $type,
@@ -443,18 +421,33 @@ endforeach;
 																					'created_at' => '',
 																					'created_by' => $userId,
 																		];
-											//send menu
+						else:
 
+								$fields = [
+																					'shopId' => $shopId,
+																					'invoice_number' => $invoice,
+																					'amount' => $amount,//incase of discount, use this valu for total calc
+																					'discount' => $discount,
+																					'balance' => $balance,
+																					'period' => $date,
+																					'ord_type' => $type,
+																					'kitchen' => $kitchen,
+																					'created_at' => '',
+																					'created_by' => $userId,
+																		];
+
+						endif;
+											//send menu
 									$send = $Sale->insert($fields);
 												if($send):
 
 																$result['status'] = "success";
-																$result['msg']  =   'Menu item has been added to cart';
+																$result['msg']  =   'Order sent successfully';
 
 															else:
 
 																$result['status'] = "db_error";
-																$result['msg'] = "Error: Item was not allocated. Please try again later";
+																$result['msg'] = "Error: Order not sent. Please try again later";
 															endif;
 
 
@@ -463,14 +456,6 @@ endforeach;
 
 
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -598,15 +583,6 @@ $del  = $Orderdetail->bulkDelete($params);
 
   	die();
 	}
-
-
-
-
-
-
-
-
-
 
 
 
@@ -746,25 +722,21 @@ $del  = $Orderdetail->bulkDelete($params);
 	$out = array('error' => false);
 	$Sale = new Sale('sales');
 
-	  $token = $_GET['token'];
 	  $shopId = $_GET['shopId'];
 $d = "PENDING";
 	$User = new User('users');
 	$Table = new HTable('htables');
 	$Seat = new Seat('seats');
 	$User = new User('users');
- 	$Query  = $User->findByToken($token);
 
-	if($Query):
-	$userId = $Query->id;
-	endif;
-
-		$params  = ['conditions'=> ['shopId = ? ', 'created_by = ? ', 'status = ? '],	'bind' => [$shopId, $userId, $d] ];
+		$params  = ['conditions'=> ['shopId = ? ',  'status = ? '],	'bind' => [$shopId, $d] ];
 	$Baskets = $Sale->find($params);
 
-		foreach($Baskets as $Basket):
+$i= 0;
+foreach($Baskets as $Basket):
 
 	$row = array(
+		'key'=>'key'.$i,
 		'id'=>$Basket->id,
 		'invoice_number'=>$Basket->invoice_number,
 		'amount'=> $Basket->amount,
@@ -782,6 +754,7 @@ $d = "PENDING";
 	);
 
 	$data[]=$row;
+	$i+=1;
 	endforeach;
 
 	 	$out['data'] = $data;
@@ -790,6 +763,253 @@ $d = "PENDING";
   	die();
 
 }
+
+
+
+
+
+
+
+public  function payNow(){
+			$data  = [];
+
+				$out = array('error' => false);
+				$Sale = new Sale('sales');
+   	$User = new User('users');
+
+			$d = "PENDING";
+	  $token = $_GET['token'];
+	  $id = $_GET['id'];
+		 $status ="PAID";
+
+					$Query  = $User->findByToken($token);
+
+					if($Query):
+					$userId = $Query->id;
+
+						endif;
+
+					$fields = [
+													'status' => $status,
+										 		'cashier' => $userId,
+										];
+
+								$send = $Sale->update($fields, (int)$id);
+					if($send):
+
+							$result['status'] = "success";
+							$result['msg']  =   'Transaction Completed';
+
+						else:
+
+							$result['status'] = "db_error";
+							$result['msg'] = "Error:Please try again later";
+						endif;
+
+}
+
+
+
+
+ public function salesReport()
+{
+	$data  = [];
+
+	$out = array('error' =>  false);
+	$Sale = new Sale('sales');
+
+	  $startDate = $_GET['startDate'];
+	  $endDate = $_GET['endDate'];
+	  //$startDate =  date_format(date_create($_GET['startDate']),"Y-m-d H:i:s") ;
+	  //$endDate =  date_format(date_create($_GET['endDate']),"Y-m-d H:i:s");
+	  $shopId = $_GET['shopId'];
+
+	$Beedy = new Beedy();
+	$Table = new HTable('htables');
+	$Seat = new Seat('seats');
+	$User = new User('users');
+
+		$params  = ['conditions'=> ['shopId = ? ',  'period >= ? ',  'period <= ? '],
+														'bind' => [$shopId, $startDate, $endDate] ];
+	$Reports = $Sale->find($params);
+
+$i= 0;
+foreach($Reports as $Report):
+
+	$row = array(
+		'key'=>'key'.$i,
+		'id'=>$Report->id,
+		'invoice_number'=>$Report->invoice_number,
+		'amount'=> $Report->amount,
+		'status'=> $Report->status,
+		'period'=> $Report->period,
+	'balance'=>$Report->balance,
+		'table'=> $Table->findById($Report->tid)->name,
+		'seat'=> $Seat->findById($Report->sid)->name,
+	'ord_type'=>$Report->ord_type,
+		'kitchen'=>$Report->kitchen,
+	'waiter'=>	$User->findById($Report->waiter)->fullname,
+	'cashier'=>	$User->findById($Report->cashier)->fullname,
+		'created_at'=>$Report->created_at,
+		'created_by'=>	$User->findById($Report->created_by)->fullname,
+		'updated_by'=>$User->findById($Report->updated_by)->fullname,
+		'updated_at'=>$Report->updated_at
+	);
+
+	$data[]=$row;
+	$i+=1;
+	endforeach;
+
+	 	$out['data'] = $data;
+    echo json_encode($out);
+
+  	die();
+
+}
+
+
+
+
+
+ public function departmentReport()
+{
+	$data  = [];
+
+	$out = array('error' =>  false);
+	$Sale = new Sale('sales');
+	$Orderdetail = new Orderdetail('orderdetails');
+	$Product = new Product('products');
+
+	  $startDate = $_GET['startDate'];
+	  $endDate = $_GET['endDate'];
+	  $shopId = $_GET['shopId'];
+
+	$Beedy = new Beedy();
+	$Table = new HTable('htables');
+	$Seat = new Seat('seats');
+	$User = new User('users');
+
+
+$sales_order = array();
+  $price_order = array();
+
+
+		$params  = ['conditions'=> ['shopId = ? ',  'period >= ? ',  'period <= ? '],
+														'bind' => [$shopId, $startDate, $endDate] ];
+	$InvoiceList = $Sale->find($params);
+
+
+		foreach($InvoiceList as $LIST):
+
+			$invoice = $LIST->invoice_number;
+		//get products under this invoice
+		//count each product
+
+				$OrderParams  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
+
+				//check order details based on invoice
+			$Orders =  $Orderdetail->find($OrderParams);
+
+				//loop through the order
+								foreach($Orders as $Order):
+								//while($Order = $Orders->fetch()){
+
+											if(array_key_exists(  $Order->product_id , $sales_order) ):
+
+															$sales_order[ $Order->product_id] += $Order->qty;
+															$price_order[  $Order->product_id] += $Order->total;
+
+
+										else:
+														$sales_order[  $Order->product_id]  = $Order->qty;
+														$price_order[ $Order->product_id]  = $Order->total;
+
+											endif;
+								//}
+								endforeach;
+	endforeach;
+
+
+
+$total_qty = 0;
+$total_amount = 0;
+
+$i= 0;
+foreach($sales_order as $key => $val){
+$p =  $Beedy->getColById($Product,   $key, 'product_name') ;
+$main =  $Beedy->getColById($Product, $key, 'kitchen');
+$left =  $Beedy->getColById($Product, $key, 'qty');
+
+	$row = array(
+		'key'=>'key'.$i,
+		'product_id'=> $Order->product_id,
+		'product_name'=> $p,
+	 'sold'=>$val,
+	 'left'=>$left,
+	 'kitchen'=>$main,
+		'price'=>$price_order[$key]
+	);
+
+	$data[]=$row;
+
+	$i+=1;
+}
+
+ 	$out['data'] = $data;
+
+	 	$out['sales'] = $sales_order; //qty per products
+	 	$out['price'] = $price_order;
+    echo json_encode($out);
+
+  	die();
+
+}
+
+
+
+
+ public function staffReport()
+{
+	 $data  = [];
+
+	$out = array('error' =>  false);
+	$Sale = new Sale('sales');
+
+	  $staff = $_GET['staff'];
+	  $shopId = $_GET['shopId'];
+
+	$Beedy = new Beedy();
+
+		$params  = ['conditions'=> ['shopId = ? ',  'created_by= ? '],
+														'bind' => [$shopId, $staff] ];
+	$Reports = $Sale->find($params);
+
+$i= 0;
+foreach($Reports as $Report):
+
+	$row = array(
+		'key'=>'key'.$i,
+		'id'=>$Report->id,
+		'invoice_number'=>$Report->invoice_number,
+		'amount'=> $Report->amount,
+		'status'=> $Report->status,
+		'period'=> $Report->period,
+	'ord_type'=>$Report->ord_type,
+		'kitchen'=>$Report->kitchen
+	);
+
+	$data[]=$row;
+	$i+=1;
+	endforeach;
+
+	 	$out['data'] = $data;
+    echo json_encode($out);
+
+  	die();
+
+}
+
+
 
 
 

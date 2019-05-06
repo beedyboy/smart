@@ -117,8 +117,6 @@ public function findByToken($token)
 
 public function findWhere($table, $params = [])
 {
-
-
 	return $this->_db->find($table, $params);
 }
 
@@ -237,6 +235,10 @@ public function update($fields, $id)
 	 return $this->_db->update($this->_table, $fields, (int)$id);
 }
 
+public function lastId(){
+return $this->_db->lastID();
+
+}
 public function delete($id = '')
 {
 

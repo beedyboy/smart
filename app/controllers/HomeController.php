@@ -26,7 +26,8 @@ public function getSystemStat()
 	$row = array(
 		'user'=>$Beedy->totalUser($shopId),
 		'product'=>$Beedy->totalProduct($shopId),
-		'supplier'=>$Beedy->totalSupplier($shopId)
+		'supplier'=>$Beedy->totalSupplier($shopId),
+		'shop'=>$Beedy->totalShop()
 	);
 
 	$data[]=$row;

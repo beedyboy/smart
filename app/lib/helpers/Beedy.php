@@ -123,6 +123,22 @@ public function getColTotalByInvoice($obj,$invoice, $field)
 }
 
 
+
+public function getUserId($token)
+{
+
+	$User = new User('users');
+ 	$Query  = $User->findByToken($token);
+
+	if($Query):
+	return $userId = $Query->id;
+
+	else:
+	return '';
+
+	endif;
+}
+
 public  function getCompanyId()
 {
 	return  $org_id = Auth::auth('org_id');
@@ -173,6 +189,12 @@ public function totalSupplier($shopId)
 $Supplier = new Supplier('suppliers');
 $ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
  		$qUser = $Supplier->find($ary);
+ return count($qUser);
+}
+public function totalShop()
+{
+$Shop = new Shop('shops'); 
+ 		$qUser = $Shop->find();
  return count($qUser);
 }
 

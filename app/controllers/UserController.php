@@ -36,14 +36,10 @@ public function list()
 
 
 public function save(){
-//	header('Access-Control-Allow-Origin: *');
-//  	header('Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
-//  	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-// 	   header("Content-type: application/json");
-					
+
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
-	
+
 $sales = (empty($data['sales'])) ? [] : $data['sales'];
 $user = (empty($data['user'])) ? [] :$data['user'] ;
 $menu = (empty($data['menu'])) ? [] : $data['menu'];
@@ -51,11 +47,23 @@ $supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
 $hall = (empty($data['hall'])) ? [] : $data['hall'];
 $seat = (empty($data['seat'])) ? [] : $data['seat'];
 
+$table = (empty($data['table'])) ? [] : $data['table'];
+$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
+$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
 
-$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat);
+
+$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
+$ary = [];
+
+	  $UserList  = $this->User->find();
+
+			foreach ($UserList as $key => $value) {
+					$ary[] = $value->username;
+			}
+				if(!in_array( $data['username'], $ary)):
 
 $role = implode(",", $roleArray);
-		//$out['data'] = $data['position'];
+
 			$fields = [
 
 										'fullname' => $data['fullname'],
@@ -81,123 +89,100 @@ $role = implode(",", $roleArray);
 								$result['status'] = "db_error";
 								$result['msg'] = "Error: User was not added. Please try again later";
 							endif;
-		
+else:
+				  			$result['status'] = "error";
+								$result['msg'] = "Error: This username may already exist. Please try again with a different one";
+				 endif;
   echo json_encode($result);
 
-	
+
 }
- 
+
 #endregion
 
- 
+
 /**
  * [edit function]
  * @param  [type] $id [primary key to be edited]
  * @return [type]     [view]
  */
-public function edit($id)
-{
-	$this->view->data = $this->User->findById($id);
-	 $this->view->displayErrors = $this->validate->displayErrors();
-		$this->view->extra('client/edit');
+
+
+public function update(){
+
+	 $result = array();
+	$data = json_decode(file_get_contents("php://input"), TRUE);
+
+$sales = (empty($data['sales'])) ? [] : $data['sales'];
+$user = (empty($data['user'])) ? [] :$data['user'] ;
+$menu = (empty($data['menu'])) ? [] : $data['menu'];
+$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
+$hall = (empty($data['hall'])) ? [] : $data['hall'];
+$seat = (empty($data['seat'])) ? [] : $data['seat'];
+
+$table = (empty($data['table'])) ? [] : $data['table'];
+$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
+$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
+$username = $data['username'];
+$fullname = $data['fullname'];
+$position = $data['position'];
+$id = $data['id'];
+
+
+$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
+
+$role = implode(",", $roleArray);
+		//$out['data'] = $data['position'];
+
+
+							///search for all users with this new name
+		  $ary = [];
+	 			$params = [  'conditions'=> ['id <> ? '], 'bind' => [$id] ];
+
+	  $UserList  = $this->User->find($params);
+			$User = $this->User->findById((int)$id);
+
+			foreach ($UserList as $key => $value) {
+					$ary[] = $value->username;
+			}
+
+	//if the name exist, check the id. if the id is mine continue, ellse, the user exist
+		if($User->fullname != $fullname || $User->username != $username || $User->role != $role || $User->position != $position):
+
+
+				if(!in_array( $username, $ary)):
+					$fields = [
+										'fullname' => $fullname,
+										'username' => $username,
+										'role' => $role,
+										'position' => $position,
+									 	'updated_at' => '',
+							];
+
+						$send = $this->User->update($fields, (int)$id);
+							if($send):
+
+								$result['status'] = "success";
+								$result['msg']  =   'New User has been added successfully';
+
+							else:
+
+								$result['status'] = "db_error";
+								$result['msg'] = "Error: User was not added. Please try again later";
+							endif;
+				else:
+				  			$result['status'] = "error";
+								$result['msg'] = "Error: This username may already exist. Please try again with a different one";
+				 endif;
+				endif;
+
+  echo json_encode($result);
+
+
 }
 
-    public function update()
-    {
-       if($_POST)
-        {
 
-					$data = array();
-					$validation = new validate();
-
-										$validation->check($_POST, [
-
-																							'acc_first_name'=> [
-																							'display'=> 'First Name',
-																							'max' => 30,
-																							'required'=> true
-																									],
-
-																							'acc_last_name'=> [
-																							'display'=> 'Last Name',
-																							'max' => 30,
-																							'required'=> true
-																							],
-
-																							'acc_email'=> [
-																							'display'=> 'Email',
-																							'required'=> true,
-																							'max' => 50,
-																							'valid_email' => true
-																							],
-
-																							'acc_phone'=> [
-																							'display'=> 'Phone Number',
-																							'required'=> true,
-																							'max'=> 20
-																							],
-
-
-																					]);
-
-
-								if($validation->passed())
-								{
-
-									$fields = [
-
-									'acc_first_name' => Input::get('acc_first_name'),
-									'acc_last_name' => Input::get('acc_last_name'),
-									'acc_email' => Input::get('acc_email'),
-									'gender' => Input::get('gender'),
-									'acc_phone' => Input::get('acc_phone'),
-									'updated_at' => ''
-													];
-
-					 				 $ary = [];
-										$params = [  'conditions'=> ['id <> ? '], 'bind' => [Input::get('id')] ];
-
-										$existing = $this->User->find($params);
-							    	$User = $this->User->findById((int)Input::get('id'));
-
-										foreach ($existing as $key => $value)
-										 {
-												$ary[] = $value->acc_email;
-										 }
-
-
-								if($User->acc_first_name != Input::get('acc_first_name') || $User->gender != Input::get('gender') || $User->acc_email != Input::get('acc_email') || $User->acc_last_name != Input::get('acc_last_name')):
-
-										if(!in_array( Input::get('acc_email'), $ary)):
-												$send = $this->User->update($fields, (int)Input::get('id'));
-
-												if($send):
-														$data['status'] = "success";
-														$data['msg']  =   'User record updated successfully';
-												else:
-												$data['status'] = "db_error";
-												$data['msg'] = "Error: User was not updated. Please try again later";
-												endif;
-
-										else:
-														$data['status'] = "error";
-														$data['msg'] = "Error: This User email may already exist. Please try again with a different one";
-										endif;
-								endif;
-						 	}
-							else
-							{
-									$data['status'] = "val_error";
-									$data['msg'] = $validation->displayErrors();
-							}
-
-
-								unset($_POST);
-								echo json_encode($data);
-
-	  }
-  }
- /**
+    /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id

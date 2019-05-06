@@ -19,7 +19,7 @@ class LoginController extends Controller
 
 	 public function authenticate()
  	{
- 
+
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 	$username = $data['username'];
@@ -45,7 +45,7 @@ class LoginController extends Controller
 				 $result['status'] = "green";
 				 $result['msg'] = "Login Successful";
 					$result['record'] = $this->Staff->findByUsername($data['username']);
-					//$result['token'] = $hash;
+					//$result['token'] = $hash; $area_privilege= explode(",", $loadPermit);
 
 				}
 				else
