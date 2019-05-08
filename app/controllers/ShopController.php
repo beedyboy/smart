@@ -35,6 +35,7 @@ public function save(){
 
 $Beedy = new Beedy();
 $User = new User('users');
+$Application = new Application('applications');
 $total = $Beedy->	totalShop();
 if($total < 3)
 {
@@ -60,12 +61,7 @@ if($total < 3)
 						$send = $this->Shop->insert($fields);
 							if($send):
 
-$role = "addSales,editSales,delSales,
-addUser,editUser,delUser,
-addMenu,editMenu,delMenu,
-editSupplier,addSupplier,delSupplier,
-addHall,editHall,delHall, addSeat,editSeat,delSeat,addTable,editTable,delTable,
-addPurchases,editPurchases,delPurchases,addFinished,editAllocation,addToKitchen";
+$role = "addSales,editSales,delSales, addUser,editUser,delUser,addMenu,editMenu,delMenu,editSupplier,addSupplier,delSupplier,addHall,editHall,delHall, addSeat,editSeat,delSeat,addTable,editTable,delTable,addPurchases,editPurchases,delPurchases,addFinished,editAllocation,addToKitchen";
 					$fields2 = [
 										'fullname' => $data['fullname'],
 										'shopId' => $this->Shop->lastId(),
@@ -77,7 +73,12 @@ addPurchases,editPurchases,delPurchases,addFinished,editAllocation,addToKitchen"
 										'updated_at' => '',
 							];
 
-								$send2 = $User->insert($fields2);
+					$settings= [
+										'shopId' => $this->Shop->lastId()
+							];
+
+						  $User->insert($fields2);
+								$send2 = $Application->insert($settings);
 								if($send2):
 								$result['status'] = "success";
 								$result['msg']  =   'New Shop has been created successfully';

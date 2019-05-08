@@ -56,8 +56,8 @@ define('SITE_TITLE', 'SMART RESTAURANT'); //this will be used if no title is set
 
 //export const serverUrl = 'http://192.168.43.215/project/php/smart/'
 define('base_url', '/smart/');
-define('origin', 'http://192.168.10.100:3000');
-//define('origin', 'http://localhost:3000');
+define('origin', 'http://192.168.0.5');
+define('origin', 'http://localhost:3000');
 /*
 |--------------------------------------------------------------------------
 | Display Debug backtrace
@@ -72,3 +72,5 @@ define('CURRENT_USER_SESSION_NAME', 'kwteyruopisnamjcyr479EYndmOU');
 define('REMEMBER_ME_COOKIE_NAME', 'JASDFGTYinfgvr84649vu');
 //30 days time is in seconds for 30 days
 define('REMEMBER_ME_COOKIE_EXPIRY', 2592000);
+
+//http://symbologic.info/currency.htm

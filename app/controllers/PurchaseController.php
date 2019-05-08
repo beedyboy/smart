@@ -66,11 +66,12 @@ public function save(){
 	  $cost_price = $data['cost_price'];
 	  $supplierId = $data['supplierId'];
 	  $item_name = $data['item_name'];
+	  $note = $data['note'];
 	  $shopId = $data['shopId'];
 
 	$Beedy = new Beedy();
  	$userId  = $Beedy->getUserId($token);
-	 
+
 
 			$fields = [
 										'cost_price' => $cost_price,
@@ -79,6 +80,7 @@ public function save(){
 										'supplierId' => $supplierId,
 										'transaction_type' => $data['transaction_type'],
 										'purchased_date' => $data['purchased_date'],
+										'note' => $note,
 										'shopId' => $shopId,
 										'created_by' => $userId,
 										'created_at' => '',
@@ -120,6 +122,7 @@ public function update(){
 	 	$transaction_type = $data['transaction_type'];
 	  $cost_price = $data['cost_price'];
 	  $supplierId = $data['supplierId'];
+	  $note = $data['note'];
 	  $item_name = $data['item_name'];
 	  $token = $data['token'];
 	  $qty = $data['qty'];
@@ -136,7 +139,7 @@ public function update(){
 
 							$Item = $this->Purchase->findById((int)$id);
 
-		   		if($Item->item_name != $item_name || $Item->qty != $qty  || $Item->transaction_type != $transaction_type || $Item->cost_price != $cost_price || $Item->supplierId != $supplierId)
+		   		if($Item->item_name != $item_name || $Item->qty != $qty  || $Item->note != $note  || $Item->transaction_type != $transaction_type || $Item->cost_price != $cost_price || $Item->supplierId != $supplierId)
 							{
 								$fields = [
 										'cost_price' => $cost_price,
@@ -145,6 +148,7 @@ public function update(){
 										'supplierId' => $supplierId,
 										'transaction_type' => $transaction_type,
 										'purchased_date' => $data['purchased_date'],
+										'note' => $note,
 										'updated_by' => $userId,
 										'updated_at' => '',
 							];

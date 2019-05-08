@@ -18,14 +18,15 @@ public function list()
 {
 	$data = [];
 	$out = array('error' => false);
-	$user  = $this->User->find();
+
+		$shopId= $_GET['shopId'];
+
+		$params  = ['conditions'=> ['shopId = ?'], 'bind' => [$shopId] ];
+
+	$user  = $this->User->find($params);
 
   	$out['data'] = $user;
 
-  	header('Access-Control-Allow-Origin: *');
-  	header('Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method');
-  	header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
- 	   header("Content-type: application/json");
 	   echo json_encode($out);
 
   	die();
@@ -163,12 +164,12 @@ $role = implode(",", $roleArray);
 							if($send):
 
 								$result['status'] = "success";
-								$result['msg']  =   'New User has been added successfully';
+								$result['msg']  =   'User\'s record has been updated successfully';
 
 							else:
 
 								$result['status'] = "db_error";
-								$result['msg'] = "Error: User was not added. Please try again later";
+								$result['msg'] = "Error: User\'s record was not updated. Please try again later";
 							endif;
 				else:
 				  			$result['status'] = "error";

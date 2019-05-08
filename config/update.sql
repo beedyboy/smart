@@ -9,3 +9,12 @@ ALTER TABLE `applications` ADD FOREIGN KEY (`updated_by`) REFERENCES `shops`(`id
 
 
 ALTER TABLE `sales` ADD `period` VARCHAR(20) NULL AFTER `ord_type`;
+
+ALTER TABLE `applications` ADD PRIMARY KEY(`id`);
+ALTER TABLE `applications` CHANGE `id` `id` INT(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `applications` CHANGE `updated_at` `updated_at` TIMESTAMP NULL, CHANGE `updated_by` `updated_by` INT(11) NULL;
+
+ALTER TABLE `applications` DROP FOREIGN KEY `applications_ibfk_2`;
+ALTER TABLE `applications` ADD CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `purchases` ADD `note` VARCHAR(255) NULL AFTER `purchased_date`;
