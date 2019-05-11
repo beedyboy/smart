@@ -28,6 +28,7 @@ class PurchaseController extends Controller
 	foreach($purchases as $purchase):
 
 	$row = array(
+		'id'=>$purchase->id,
 		'item_name'=>$purchase->item_name,
 		'supplier_name'=> $Supplier->findById($purchase->supplierId)->supplier_name,
 		'transaction_type'=> $purchase->transaction_type,
@@ -35,7 +36,8 @@ class PurchaseController extends Controller
 	'qty'=>$purchase->qty,
 		'cost_price'=>$purchase->cost_price,
 	'purchased_date'=>$purchase->purchased_date,
-		'id'=>$purchase->id,
+		'note'=>$purchase->note,
+		'unit'=>($purchase->unit === null)? '':$purchase->unit,
 		'created_by'=>	$User->findById($purchase->created_by)->fullname,
 		'created_at'=>$purchase->created_at,
 		'updated_by'=>$User->findById($purchase->updated_by)->fullname,
@@ -77,6 +79,7 @@ public function save(){
 										'cost_price' => $cost_price,
 										'item_name' => $item_name,
 										'qty' => $data['qty'],
+										'unit' => $data['unit'],
 										'supplierId' => $supplierId,
 										'transaction_type' => $data['transaction_type'],
 										'purchased_date' => $data['purchased_date'],
@@ -149,6 +152,7 @@ public function update(){
 										'transaction_type' => $transaction_type,
 										'purchased_date' => $data['purchased_date'],
 										'note' => $note,
+										'unit' => $data['unit'],
 										'updated_by' => $userId,
 										'updated_at' => '',
 							];

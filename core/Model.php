@@ -234,6 +234,11 @@ public function update($fields, $id)
 	 if(empty($fields) || $id == '') return false;
 	 return $this->_db->update($this->_table, $fields, (int)$id);
 }
+public function updateMore($fields, $condition=[])
+{
+	 if(empty($fields) || empty($condition)) return false;
+	 return $this->_db->updateMore($this->_table, $fields, $condition);
+}
 
 public function lastId(){
 return $this->_db->lastID();
@@ -254,6 +259,7 @@ public function delete($id = '')
 	return $this->_db->delete($this->_table, $id);
 
 }
+
 
 public function bulkDelete($params = [])
 {

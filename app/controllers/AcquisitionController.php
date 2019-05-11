@@ -10,7 +10,7 @@ class AcquisitionController extends Controller
 		# code...
 		parent::__construct($controller, $action);
 		$this->load_model('Acquisition');
-		   
+
 
 	}
 
@@ -31,6 +31,7 @@ class AcquisitionController extends Controller
 		'itemId'=>$Acquisition->itemId,
 		'item_name'=> $Purchase->findById($Acquisition->itemId)->item_name,
 	 'qty'=>$Acquisition->qty,
+	 'unit'=>($Acquisition->unit === null)? '':$Acquisition->unit,
 		'kitchen'=>$Acquisition->kitchen,
 		'id'=>$Acquisition->id,
 		'created_by'=>	$User->findById($Acquisition->created_by)->fullname,
@@ -64,15 +65,12 @@ public function save(){
 	  $kitchen = $data['kitchen'];
 	  $qty = $data['qty'];
 	  $shopId = $data['shopId'];
-
 	$User = new User('users');
  	$Query  = $User->findByToken($token);
 
 	if($Query):
 	$userId = $Query->id;
 	endif;
-
-
 
 //check whether quantity is lesser than stock quantity
 
@@ -92,6 +90,7 @@ if($qty <= $item_quantity) {
 										'itemId' => $itemId,
 										'qty' => $qty,
 										'kitchen' => $kitchen,
+										'unit' => $data['unit'],
 										'shopId' => $shopId,
 										'created_by' => $userId,
 										'created_at' => '',
@@ -148,6 +147,7 @@ public function update(){
 	  $kitchen = $data['kitchen'];
 	  $qty = $data['qty'];
 	  $id = $data['id'];
+			$unit  = $data['unit'];
 
 			$Allocation = $this->Acquisition->findById((int)$id);
 		 $Purchase = new Purchase('purchases');
@@ -162,11 +162,12 @@ $updQty =  (int)($qty) - (int)($Allocation->qty); // this means 5 - 2
 
 	$newQuantity = (int)$item_quantity - (int)$updQty;
 
-				 		if($Allocation->itemId != $itemId || $Allocation->qty != $qty || $Allocation->kitchen != $kitchen )
+				 		if($Allocation->itemId != $itemId || $Allocation->qty != $qty ||  $Allocation->unit != $unit || $Allocation->kitchen != $kitchen )
 							{
 									$fields = [
 										'itemId' => $itemId,
 										'qty' => $qty,
+										'unit' => $unit,
 										'kitchen' => $kitchen,
 										'updated_by' => $userId,
 										'updated_at' => '',

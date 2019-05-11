@@ -288,9 +288,23 @@ public function updateFinishedProduct(){
 
 
 
-public function saveOrder(){
 
-	 $result = array();
+public function fetchSavedInvoice()
+{
+	 $out = array('error' => false);
+		$Sale = new Sale('sales');
+	  $invoice = $_GET['invoice'];
+	  $shopId = $_GET['shopId'];
+			$params = [	 'conditions'=> ['shopId = ?', 'invoice_number = ?'], 'bind' => [$shopId, $invoice] ];
+					$result = $Sale->find($params);
+
+	$out['data'] = $result;
+	   echo json_encode($out);
+
+  	die();
+}
+
+public function saveOrder(){
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 $date = date("Y-m-d");
 	  $invoice = $data['invoice'];
@@ -343,6 +357,20 @@ if($type == 'Dine-In'):
 																					'created_at' => '',
 																					'created_by' => $userId,
 																		];
+									$fields2 = [
+
+																					'amount' => $amount,//incase of discount, use this valu for total calc
+																					'discount' => $discount,
+																					'tid' => $table,
+																					'sid' => $seat,
+																					'period' => $date,
+																					'waiter' => $waiter,
+																					'balance' => $balance,
+																					'ord_type' => $type,
+																					'kitchen' => $kitchen,
+																					'updated_at' => '',
+																					'updated_by' => $userId,
+																		];
 						else:
 
 								$fields = [
@@ -357,10 +385,42 @@ if($type == 'Dine-In'):
 																					'created_at' => '',
 																					'created_by' => $userId,
 																		];
+	$fields2 = [
 
+																					'invoice_number' => $invoice,
+																					'amount' => $amount,//incase of discount, use this valu for total calc
+																					'discount' => $discount,
+																					'balance' => $balance,
+																					'period' => $date,
+																					'ord_type' => $type,
+																					'kitchen' => $kitchen,
+																					'updated_at' => '',
+																					'updated_by' => $userId,
+																		];
 						endif;
+						//check whether order existed before
+						$params = [	 'conditions'=> ['shopId = ?', 'invoice_number = ?'], 'bind' => [$shopId, $invoice] ];
+				$exist  = $Sale->find($params);
+
 											//send menu
-									$send = $Sale->insert($fields);
+	if(count($exist) < 1):
+		return 	$this->saveNewOrder($fields);
+			else:
+			//foreach ($exist as $Value):
+			//$id=$Value->id;
+			//
+			//endforeach;
+			$id = $data['id'];
+		return	$this->saveOldOrder($fields2, $id);
+
+			endif;
+
+}
+
+public function saveNewOrder($fields){
+	 $result = array();
+	$Sale = new Sale('sales');
+			$send = $Sale->insert($fields);
 												if($send):
 
 																$result['status'] = "success";
@@ -375,14 +435,33 @@ if($type == 'Dine-In'):
 
 
   echo json_encode($result);
+}
 
 
+public function saveOldOrder($fields, $id){
+$result = array();
+	$Sale = new Sale('sales');
+			$send = $Sale->update($fields, (int)$id);
+												if($send):
+
+																$result['status'] = "success";
+																$result['msg']  =   'Order updated successfully';
+
+															else:
+
+																$result['status'] = "db_error";
+																$result['msg'] = "Error: Order not updated. Please try again later";
+															endif;
+
+
+
+  echo json_encode($result);
 }
 
 
 
 
- public function fetchBasket()
+  public function fetchBasket()
 {
 	$data  = [];
 
@@ -632,11 +711,6 @@ $del  = $Orderdetail->bulkDelete($params);
 
 
 
-
-
-
-
-
  public function fetchReceivable()
 {
 	$data  = [];
@@ -688,10 +762,6 @@ foreach($Baskets as $Basket):
 
 
 
-
-
-
-
 public  function payNow(){
 			$data  = [];
 
@@ -728,6 +798,64 @@ public  function payNow(){
 							$result['msg'] = "Error:Please try again later";
 						endif;
 
+}
+
+
+
+
+
+
+
+
+
+public  function payAllBalances(){
+
+	 $result = array('error' => false);
+
+				$Sale = new Sale('sales');
+   	$User = new User('users');
+
+			$d = "PENDING";
+	  $token = $_GET['token'];
+	  $shopId = $_GET['shopId'];
+	  $kitchen = $_GET['kitchen'];
+
+ $status ="PAID";
+ $pend ="PENDING";
+
+				 $Query  = $User->findByToken($token);
+
+					if($Query):
+					$userId = $Query->id;
+
+						endif;
+
+					$fields = [
+													'status' => $status,
+										 		'cashier' => $userId,
+										];
+					$params = '';
+					if($kitchen === "All"){
+							$params = ['conditions'=> ['shopId = ?', 'status = ?'], 'bind' => [$shopId,  $pend]  ];
+
+					}
+					else{
+							$params = ['conditions'=> ['shopId = ?', 'kitchen = ?'], 'bind' => [$shopId,  $kitchen]  ];
+
+					}
+
+								$send = $Sale->updateMore($fields, $params);
+					if($send):
+
+							$result['status'] = "success";
+							$result['msg']  =   'Transaction Completed';
+
+						else:
+
+							$result['status'] = "error";
+							$result['msg'] = "Error:Please try again later";
+						endif;
+  echo json_encode($result);
 }
 
 

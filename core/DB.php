@@ -52,7 +52,7 @@ public function query($sql, $params=[])
 		}
 		if($this->_query->execute())
 		{
-			$this->_result = $this->_query->fetchAll(PDO::FETCH_OBJ);
+		 	$this->_result = $this->_query->fetchAll(PDO::FETCH_OBJ);
 			$this->_count = $this->_query->rowCount();
 			$this->_lastInsertedID = $this->_pdo->lastInsertId();
 		} else
@@ -61,7 +61,7 @@ public function query($sql, $params=[])
 		}
 	}
 
-		//dnd($this->_query);
+		 //dnd($this->_query);
 	return $this;
 }
 /*
@@ -282,7 +282,79 @@ $fieldString = '';
 
 		 return false;
 }
+/*
+ *
+ *
+ *
+ */
+public function updateMore($table, $fields=[], $params)
+{
+$fieldString = '';
+$conditionString = '';
+	$values  = [];
+	$bind = [];
 
+
+	foreach ($fields as $field => $value)
+	{
+		# code...
+
+		 if($field == "updated_at")
+		{
+
+		$values[] = setTimeStamp();
+		}
+		else{
+
+		$values[] = $value;
+		}
+		$fieldString .=   $field.'= ?,';
+	}
+
+	//condition
+if(isset($params['conditions']))
+{
+	//check if conditions was passed as an array or not
+	if(is_array($params['conditions']))
+	{
+		foreach ($params['conditions'] as $condition)
+		{
+			# code...
+			$conditionString .= ' ' . $condition . ' AND';
+		}
+
+		$conditionString = trim($conditionString);
+		$conditionString = rtrim($conditionString, ' AND');
+
+	} else
+	{
+		$conditionString = $params['conditions'];
+	}
+
+	if($conditionString != '')
+	{
+
+		$conditionString = ' WHERE ' .$conditionString;
+	}
+}
+
+if(array_key_exists('bind', $params))
+{
+	$bind = $params['bind'];
+}
+$data = array_merge($values, $bind);
+
+	$fieldString =  trim($fieldString);
+	$fieldString =  rtrim($fieldString, ',');
+	  $sql = "UPDATE {$table} SET {$fieldString} {$conditionString}";
+
+ if(!$this->query($sql, $data)->error())
+		 {
+		 	return true;
+		 }
+
+		 return false;
+}
 /*
 |--------------------------------------------------------------------------
 | Delete Usage
@@ -375,7 +447,7 @@ if(!$this->query($sql, $bind)->error())
 		 }
 
 		 return false;
-	 
+
 }
 
 

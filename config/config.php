@@ -57,7 +57,7 @@ define('SITE_TITLE', 'SMART RESTAURANT'); //this will be used if no title is set
 //export const serverUrl = 'http://192.168.43.215/project/php/smart/'
 define('base_url', '/smart/');
 define('origin', 'http://192.168.0.5');
-define('origin', 'http://localhost:3000');
+//define('origin', 'http://localhost:3000');
 /*
 |--------------------------------------------------------------------------
 | Display Debug backtrace
