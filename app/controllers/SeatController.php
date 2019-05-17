@@ -107,6 +107,10 @@ public function save(){
 							];
 
 
+$params = [	 'conditions'=> ['shopId = ?', 'name = ?', 'tid = ?'], 'bind' => [$data['shopId'], $data['name'],$data['tid']] ];
+	$exist  = $this->Seat->find($params);
+
+				if(count($exist) < 1):
 						$send = $this->Seat->insert($fields);
 							if($send):
 
@@ -118,6 +122,10 @@ public function save(){
 								$result['status'] = "db_error";
 								$result['msg'] = "Error: Seat was not added. Please try again later";
 							endif;
+	else:
+				  			$result['status'] = "error";
+							$result['msg'] = "Error: This seat already exist under this table. Please try again using different data";
+				  		endif;
 
   echo json_encode($result);
 

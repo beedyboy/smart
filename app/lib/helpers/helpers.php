@@ -1,10 +1,10 @@
 <?php
- 
+
 
 $GLOBALS['pageCount'] = null;
 $GLOBALS['pageLink'] = null;
  $GLOBALS['pageLinks']  = null;
- 
+
 function dnd($data)
 {
 	echo '<pre>';
@@ -14,28 +14,31 @@ die();
 	echo '</pre>';
 
 }
-
+function trim_value(&$value)
+{
+    $value = trim($value);
+}
 function sanitize($dirty)
 {
 	return htmlentities($dirty, ENT_QUOTES, 'UTF-8');
 }
- 
+
  function currentUser()
  {
- 
+
  	return Admin::currentLoggedInUser();
  }
 
  function getUserId()
 {
 return Session::get(CURRENT_USER_SESSION_NAME);
- 
+
 }
 
  function posted_values($post)
  {
  	$clean_ary = [];
- 	foreach ($post as $key => $value) 
+ 	foreach ($post as $key => $value)
  	{
  		# code...
  	$clean_ary[$key] =  sanitize($value);
@@ -94,27 +97,27 @@ function pageLinks()
 {
 	$server = currentURL();
 
-	$base_url = ''; 
+	$base_url = '';
 	$newBase = [];
 
 	$base_url = explode('/', base_url);
-	foreach ($base_url as $url) 
+	foreach ($base_url as $url)
 	{
 		# code...
 		 if($url != '')
 		 {
-	
+
 	 $newBase[] = '/'.$url;
 
 		 }
 	}
-		
+
 	 $reg ='';
 
 	 foreach ($newBase as $base)
 	  {
-	 	
-	 	$reg .= "\\".$base; 
+
+	 	$reg .= "\\".$base;
 	 }
 	 //the regex
 	 $reg = "/($reg)/";
@@ -126,12 +129,12 @@ function pageLinks()
 function pageNum($resolvedUrl)
 	{
 	$pageNum = 1;
-	$regex = explode('/',$resolvedUrl); 
+	$regex = explode('/',$resolvedUrl);
 	if(in_array('page', $regex))
 	{
 		$count = count($regex);
 		$pageNum = array_values(array_slice($regex, -1))[0];
-	 
+
 	}
 	return $pageNum;
 }
@@ -142,18 +145,18 @@ function aclHelper($value, $controls)
     if($value == "*" && $controls != "Other")
     {
         $all = '';
-     
+
          $all.= "<li>Create $controls</li>";
-       
+
         $all.= "<li>Read $controls</li>";
-        
+
        $all.= "<li>Update $controls</li>";
        if($controls != "Role"):
           $all.= "<li>Delete $controls</li>";
         endif;
           return $all;
-       
-    } 
+
+    }
     else
     {
        if($value == "c"):
@@ -171,15 +174,15 @@ function aclHelper($value, $controls)
 
 function actionAcl($page, $action='')
 {
-    $accept = false; 
+    $accept = false;
    $permissions = currentUser()->acls();
 dnd($permissions);
-  if(!empty($permissions[$page]) && (in_array("*", $permissions[$page]))): 
+  if(!empty($permissions[$page]) && (in_array("*", $permissions[$page]))):
     $accept = true;
     elseif (!empty($permissions[$page]) && (in_array($action, $permissions[$page]))):
-     $accept = true ; 
-    
-    endif; 
+     $accept = true ;
+
+    endif;
 return  $accept;
 
 }
@@ -200,7 +203,7 @@ return  $accept;
     return $number;
    // return '&#8358;'. $number.'k';
 }
- 
+
  function removeComma($value){
 $value = str_replace(',','',$value);
 return $value;

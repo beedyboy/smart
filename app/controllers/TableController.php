@@ -64,6 +64,10 @@ public function save(){
 							];
 
 
+$params = [	 'conditions'=> ['shopId = ?', 'name = ?', 'hid = ?'], 'bind' => [$data['shopId'],$number, $hid] ];
+	$exist  = $this->HTable->find($params);
+
+				if(count($exist) < 1):
 						$send = $this->HTable->insert($fields);
 							if($send):
 
@@ -75,6 +79,10 @@ public function save(){
 								$result['status'] = "db_error";
 								$result['msg'] = "Error: Table was not added. Please try again later";
 							endif;
+	else:
+				  			$result['status'] = "error";
+							$result['msg'] = "Error: This table already exist under this zone. Please try again using different data";
+				  		endif;
 
   echo json_encode($result);
 

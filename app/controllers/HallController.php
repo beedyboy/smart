@@ -45,7 +45,10 @@ public function save(){
 										'updated_at' => '',
 							];
 
+$params = [	 'conditions'=> ['shopId = ?', 'name = ?'], 'bind' => [$data['shopId'], $data['name']] ];
+	$exist  = $this->Hall->find($params);
 
+				if(count($exist) < 1):
 						$send = $this->Hall->insert($fields);
 							if($send):
 
@@ -57,7 +60,10 @@ public function save(){
 								$result['status'] = "db_error";
 								$result['msg'] = "Error: Hall was not added. Please try again later";
 							endif;
-
+	else:
+				  			$result['status'] = "error";
+							$result['msg'] = "Error: This zone already exist. Please try again using different data";
+				  		endif;
   echo json_encode($result);
 
 
@@ -81,30 +87,39 @@ public function update(){
 
 	if($Query):
 	$userId = $Query->id;
-
 	endif;
+$ary = [];
+	$params = [  'conditions'=> ['id <> ? '], 'bind' => [$id] ];
 
-
+	  $HallList  = $this->Hall->find($params);
+			foreach ($HallList as $key => $value) {
+					$ary[] = $value->name;
+			}
 							$Hall = $this->Hall->findById((int)$id);
 
 		   		if($Hall->name != $name)
 							{
-								$fields = [
-										'name' => $name,
-										//'updated_by' => $userId,
-										'updated_at' => '',
-							];
-									$send = $this->Hall->update($fields, (int)$id);
-							if($send):
+									if(!in_array( $name, $ary)):
+										$fields = [
+												'name' => $name,
+												//'updated_by' => $userId,
+												'updated_at' => '',
+									];
+													$send = $this->Hall->update($fields, (int)$id);
+											if($send):
 
-								$result['status'] = "success";
-								$result['msg']  =   'Hall has been updated successfully';
+												$result['status'] = "success";
+												$result['msg']  =   'Hall has been updated successfully';
 
-							else:
+											else:
 
-								$result['status'] = "db_error";
-								$result['msg'] = "Error: Hall was not updated. Please try again later";
-							endif;
+												$result['status'] = "db_error";
+												$result['msg'] = "Error: Hall was not updated. Please try again later";
+											endif;
+									else:
+				  			$result['status'] = "error";
+							$result['msg'] = "Error: This zone already exist. Please try again using different data";
+				  		endif;
 							}
 							else{
 									$result['status'] = "same";

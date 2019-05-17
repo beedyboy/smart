@@ -14,10 +14,6 @@ class UserController extends Controller
 
 	}
 
-public function trim_value(&$value)
-{
-    $value = trim($value);
-}
 
 public function list()
 {
@@ -63,9 +59,9 @@ $roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $pur
 
 array_walk($roleArray, 'trim_value');
 
-echo $roleArray;
-return;
-die;
+//var_dump($roleArray);
+//return;
+//die;
 $ary = [];
 
 	  $UserList  = $this->User->find();

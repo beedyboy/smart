@@ -300,20 +300,21 @@ $data  = [];
 		foreach($LIST as $DATA):
 
 	$row = array(
-		'id'=>$DATA->id,
-		'invoice_number'=>$DATA->invoice_number,
-		'amount'=> $DATA->amount,
-	'balance'=>$DATA->balance,
-		'table'=> $Table->findById($DATA->tid)->name,
-		'seat'=> $Seat->findById($DATA->sid)->name,
-	'ord_type'=>$DATA->ord_type,
-		'kitchen'=>$DATA->kitchen,
-	'waiter'=>	$User->findById($DATA->waiter)->fullname,
-	'cashier'=>	$User->findById($DATA->cashier)->fullname,
-		'created_at'=>$DATA->created_at,
-		'created_by'=>	$User->findById($DATA->created_by)->fullname,
-		'updated_by'=>$User->findById($DATA->updated_by)->fullname,
-		'updated_at'=>$DATA->updated_at
+				'id'=>$DATA->id,
+				'invoice_number'=>$DATA->invoice_number,
+				'amount'=> $DATA->amount,
+			'balance'=>$DATA->balance,
+				'table'=> $Table->findById($DATA->tid)->name,
+				'seat'=> $Seat->findById($DATA->sid)->name,
+			'ord_type'=>$DATA->ord_type,
+				'kitchen'=>$DATA->kitchen,
+				'vat'=>$DATA->vat,
+			'waiter'=>	$User->findById($DATA->waiter)->fullname,
+			'cashier'=>	$User->findById($DATA->cashier)->fullname,
+				'created_at'=>$DATA->created_at,
+				'created_by'=>	$User->findById($DATA->created_by)->fullname,
+				'updated_by'=>$User->findById($DATA->updated_by)->fullname,
+				'updated_at'=>$DATA->updated_at
 	);
 
 	$data[]=$row;
@@ -361,6 +362,10 @@ $discount += $Details->discount;
 
 endforeach;
 	$balance = 	$amount;
+	//calc vat
+	$per = 0.175;
+	$vat =  $per * $amount ;
+	$vat = round($vat,2);
 //productDetails
 if($type == 'Dine-In'):
 									$fields = [
@@ -373,6 +378,7 @@ if($type == 'Dine-In'):
 																					'period' => $date,
 																					'waiter' => $waiter,
 																					'balance' => $balance,
+																					'vat' => $vat,
 																					'ord_type' => $type,
 																					'kitchen' => $kitchen,
 																					'created_at' => '',
@@ -387,6 +393,7 @@ if($type == 'Dine-In'):
 																					'period' => $date,
 																					'waiter' => $waiter,
 																					'balance' => $balance,
+																					'vat' => $vat,
 																					'ord_type' => $type,
 																					'kitchen' => $kitchen,
 																					'updated_at' => '',
@@ -402,6 +409,7 @@ if($type == 'Dine-In'):
 																					'balance' => $balance,
 																					'period' => $date,
 																					'ord_type' => $type,
+																					'vat' => $vat,
 																					'kitchen' => $kitchen,
 																					'created_at' => '',
 																					'created_by' => $userId,
@@ -414,6 +422,7 @@ if($type == 'Dine-In'):
 																					'balance' => $balance,
 																					'period' => $date,
 																					'ord_type' => $type,
+																					'vat' => $vat,
 																					'kitchen' => $kitchen,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
