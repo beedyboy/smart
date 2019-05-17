@@ -27,7 +27,7 @@ class LoginController extends Controller
 
 						$Staff = $this->Staff->findByUsername($data['username']);
 
-				if($Staff && password_verify($password, $Staff->acc_password))
+				if($Staff && password_verify($password, $Staff->acc_password) && $Staff->acc_status === "Active")
 				{
 
 					$remember = (isset($data['remember_me']) && $data['remember_me']) ? true : false;
@@ -52,6 +52,7 @@ class LoginController extends Controller
 				{
 					$result['error'] = true;
 					$result['status'] = "yellow";
+				 $result['msg'] = "Wrong username or password";
 					$result['errorList'] = 	$this->validate->displayErrors();
 				}
 

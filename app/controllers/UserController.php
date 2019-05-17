@@ -14,6 +14,11 @@ class UserController extends Controller
 
 	}
 
+public function trim_value(&$value)
+{
+    $value = trim($value);
+}
+
 public function list()
 {
 	$data = [];
@@ -21,7 +26,8 @@ public function list()
 
 		$shopId= $_GET['shopId'];
 
-		$params  = ['conditions'=> ['shopId = ?'], 'bind' => [$shopId] ];
+	$status = "Active";
+		$params  = ['conditions'=> ['shopId = ?','acc_status =?'], 'bind' => [$shopId,$status] ];
 
 	$user  = $this->User->find($params);
 
@@ -54,6 +60,12 @@ $acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
 
 
 $roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
+
+array_walk($roleArray, 'trim_value');
+
+echo $roleArray;
+return;
+die;
 $ary = [];
 
 	  $UserList  = $this->User->find();
@@ -190,10 +202,31 @@ $role = implode(",", $roleArray);
      * @return User
      *
      */
-    public function destroy($id)
+    public function destroy()
     {
-       $del = $this->User->delete($id);
-      if($del): echo "User Deleted Successfully"; else: "Error deleting this data... Please try again later"; endif;
+
+	 $result = array();
+	$data = json_decode(file_get_contents("php://input"), TRUE);
+	$id = $data['id'];
+	$status = "Deleted";
+  $fields = [
+										'acc_status' => $status,
+									 	'updated_at' => '',
+							];
+
+				$send = $this->User->update($fields, (int)$id);
+							if($send):
+
+								$result['status'] = "success";
+								$result['msg']  =   'User\'s record has been deleted successfully';
+
+							else:
+
+								$result['status'] = "db_error";
+								$result['msg'] = "Error: User\'s record was not deleted. Please try again later";
+							endif;
+
+  echo json_encode($result);
 
 
     }

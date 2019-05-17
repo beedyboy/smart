@@ -33,6 +33,11 @@ public static function getInstance()
 }
 
 
+public function CreatedOn(){
+//return   date('Y-m-d H:i:sa');
+return   date('d-m-Y H:i:sa');
+}
+
 
 
 public function query($sql, $params=[])
@@ -206,7 +211,7 @@ public function insert($table, $fields = [])
 		if($field == "created_at" || $field == "updated_at")
 		{
 
-		$values[] = setTimeStamp();
+		$values[] = $this->CreatedOn();
 		}
 		else{
 
@@ -262,7 +267,7 @@ $fieldString = '';
 		 if($field == "updated_at")
 		{
 
-		$values[] = setTimeStamp();
+		$values[] =  $this->CreatedOn();
 		}
 		else{
 
@@ -302,7 +307,7 @@ $conditionString = '';
 		 if($field == "updated_at")
 		{
 
-		$values[] = setTimeStamp();
+		$values[] =  $this->CreatedOn();
 		}
 		else{
 

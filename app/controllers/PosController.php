@@ -20,7 +20,8 @@ class PosController extends Controller
 	$out = array('error' => false);
 		$shopId= $_GET['shopId'];
 		$position = "Waiter";
-		$params  = ['conditions'=> ['shopId = ?', 'position = ?'], 'bind' => [$shopId, $position] ];
+	$status = "Active";
+		$params  = ['conditions'=> ['shopId = ?', 'acc_status =?', 'position = ?'], 'bind' => [$shopId, $status, $position] ];
 	$Waiters = $User->find($params);
 
   	$out['data'] = $Waiters;
@@ -55,14 +56,12 @@ $out['data'] = $Waiters;
 
  public function getCartItem()
 {
-
-
+	$data = [];
+	$out = array('error' => false);
 	$Orderdetail = new Orderdetail('orderdetails');
 	$Product = new Product('products');
-	$data = [];
 		$shopId= $_GET['shopId'];
 		$invoice= $_GET['invoice'];
-	$out = array('error' => false, 'invoice'=>$invoice);
 		$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
 
  $Orders =  $Orderdetail->find($params);
@@ -284,22 +283,44 @@ public function updateFinishedProduct(){
 
 
 
-
-
-
-
-
 public function fetchSavedInvoice()
 {
-	 $out = array('error' => false);
+$data  = [];
+	$out = array('error' => false);
 		$Sale = new Sale('sales');
+	$User = new User('users');
+	$Table = new HTable('htables');
+	$Seat = new Seat('seats');
+	$User = new User('users');
 	  $invoice = $_GET['invoice'];
 	  $shopId = $_GET['shopId'];
 			$params = [	 'conditions'=> ['shopId = ?', 'invoice_number = ?'], 'bind' => [$shopId, $invoice] ];
-					$result = $Sale->find($params);
+					$LIST = $Sale->find($params);
 
-	$out['data'] = $result;
-	   echo json_encode($out);
+		foreach($LIST as $DATA):
+
+	$row = array(
+		'id'=>$DATA->id,
+		'invoice_number'=>$DATA->invoice_number,
+		'amount'=> $DATA->amount,
+	'balance'=>$DATA->balance,
+		'table'=> $Table->findById($DATA->tid)->name,
+		'seat'=> $Seat->findById($DATA->sid)->name,
+	'ord_type'=>$DATA->ord_type,
+		'kitchen'=>$DATA->kitchen,
+	'waiter'=>	$User->findById($DATA->waiter)->fullname,
+	'cashier'=>	$User->findById($DATA->cashier)->fullname,
+		'created_at'=>$DATA->created_at,
+		'created_by'=>	$User->findById($DATA->created_by)->fullname,
+		'updated_by'=>$User->findById($DATA->updated_by)->fullname,
+		'updated_at'=>$DATA->updated_at
+	);
+
+	$data[]=$row;
+	endforeach;
+
+	 	$out['data'] = $data;
+    echo json_encode($out);
 
   	die();
 }
@@ -861,6 +882,92 @@ public  function payAllBalances(){
 
 
 
+
+public function mergeInvoice(){
+	 $result = array();
+	$data = json_decode(file_get_contents("php://input"), TRUE);
+
+	  $shopId = $data['shopId'];
+	  $invoice = $data['invoice'];
+	  $token = $data['token'];
+	  $id = $data['id'];
+
+	$User = new User('users');
+			$Sale = new Sale('sales');
+	$Orderdetail = new Orderdetail('orderdetails');
+
+ $Query  = $User->findByToken($token);
+
+	if($Query):
+	$userId = $Query->id;
+
+	endif;
+
+$A = $Sale->findById((int)$id);
+$invoiceA = $A->invoice_number;
+$amountA=  $A->amount;
+$balanceA =  $A->balance;
+$discountA =  $A->discount;
+//change invoice b to a
+		$Bfields = [
+			'invoice' => $invoiceA
+		];
+		//$updateB = $Orderdetail->update($Bfields,);
+		$params = ['conditions'=> ['invoice = ?'], 'bind' => [$invoice]  ];
+  $sendB = $Orderdetail->updateMore($Bfields, $params);
+		if($sendB):
+
+			$amountB= 0; $balanceB = 0; $discountB = 0; $Bid = 0;
+
+		//fetch sum of B and add to A
+		$BParams = [	 'conditions'=> ['shopId = ?', 'invoice_number = ?'], 'bind' => [$shopId, $invoice] ];
+					$LIST = $Sale->find($BParams);
+		foreach($LIST as $B):
+				$amountB=  $B->amount;
+				$balanceB = $B->balance;
+				$discountB = $B->discount;
+				$Bid = $B->id;
+		endforeach;
+
+
+			 $amount = $amountA + $amountB;
+			 $balance = $balanceA + $balanceB;
+			 $discount = $discountA + $discountB;
+
+									$fields = [
+																					'shopId' => $shopId,
+																					'amount' => $amount,
+																					'discount' => $discount,
+																					'balance' => $balance,
+																					'updated_at' => '',
+																					'updated_by' => $userId,
+																		];
+					$sendA = $Sale->update($fields, (int)$id);
+
+					if($sendA):
+			//delete B
+							$send = $Sale->delete($Bid);
+
+						if($send):
+
+									$result['status'] = "success";
+									$result['msg']  =   'Invoice merged successfully';
+
+								else:
+
+									$result['status'] = "error";
+									$result['msg'] = "Error:Please try again later";
+								endif;
+						else:
+
+							$result['status'] = "error";
+							$result['msg'] = "Error:Please try again later";
+						endif;
+		endif;
+		  echo json_encode($result);
+}
+
+
  public function salesReport()
 {
 	$data  = [];
@@ -1126,5 +1233,14 @@ foreach($Reports as $Report):
 
 
 
+
+
+ public function destroy($id)
+    {
+       $del = $this->Role->delete($id);
+      if($del): echo "Role Deleted Successfully"; else: "Error deleting this data... Please try again later"; endif;
+
+
+    }
 
 }

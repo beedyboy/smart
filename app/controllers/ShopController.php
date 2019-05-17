@@ -28,6 +28,21 @@ class ShopController extends Controller
 }
 
 
+
+public function getShopDetails()
+{
+$data  = [];
+	$out = array('error' => false);
+	  $shopId = $_GET['shopId'];
+			$params = [	'conditions'=> ['id = ?'], 'bind' => [$shopId] ];
+					$LIST = $this->Shop->find($params);
+
+	 	$out['data'] = $LIST;
+    echo json_encode($out);
+
+  	die();
+}
+
 public function save(){
 
 	 $result = array();
@@ -61,7 +76,11 @@ if($total < 3)
 						$send = $this->Shop->insert($fields);
 							if($send):
 
-$role = "addSales,editSales,delSales, addUser,editUser,delUser,addMenu,editMenu,delMenu,editSupplier,addSupplier,delSupplier,addHall,editHall,delHall, addSeat,editSeat,delSeat,addTable,editTable,delTable,addPurchases,editPurchases,delPurchases,addFinished,editAllocation,addToKitchen";
+$role = "addSales,editSales,delSales, addUser,editUser,delUser,addMenu,editMenu,delMenu,
+editSupplier,addSupplier,delSupplier,addHall,editHall,delHall, addSeat,editSeat,delSeat,
+addTable,editTable,delTable,addPurchases,editPurchases,delPurchases,addFinished,
+editAllocation,addToKitchen";
+ $role=preg_replace('#\s+#','',trim($role));
 					$fields2 = [
 										'fullname' => $data['fullname'],
 										'shopId' => $this->Shop->lastId(),
