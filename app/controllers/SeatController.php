@@ -107,7 +107,7 @@ public function save(){
 							];
 
 
-$params = [	 'conditions'=> ['shopId = ?', 'name = ?', 'tid = ?'], 'bind' => [$data['shopId'], $data['name'],$data['tid']] ];
+$params = [	 'conditions'=> ['shopId = ?', 'name = ?', 'tid = ?'], 'bind' => [$data['shopId'], $data['seat'],$data['tid']] ];
 	$exist  = $this->Seat->find($params);
 
 				if(count($exist) < 1):

@@ -140,12 +140,12 @@ public function update(){
 
 	endif;
 
+ 					$Product = $this->Product->findById((int)$id);
 
-
-							$Product = $this->Product->findById((int)$id);
 
 		   		if($Product->product_name != $product_name || $Product->price != $data['price'])
 							{
+
 								$fields = [
 										'product_name' => $product_name,
 										'kitchen' => $kitchen,
@@ -161,9 +161,10 @@ public function update(){
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "error";
 								$result['msg'] = "Error: Product was not updated. Please try again later";
 							endif;
+				 
 							}
 							else{
 									$result['status'] = "same";

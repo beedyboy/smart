@@ -1,0 +1,263 @@
+import React, { PureComponent } from 'react'
+import {connect} from 'react-redux'
+import {Styles} from '../../Config'
+
+import { Typography,  Button, Select, Form, Input, Icon, Alert  } from 'antd';
+
+const Option = Select.Option;
+const {  Text } = Typography;
+
+class CreateUser extends PureComponent {
+
+  render() {
+       const { result, reset } = this.props;
+    return (
+
+ <div className="grid">
+
+ <div className="column column-12">
+
+    <Form layout="horizontal" onSubmit={this.props.state.create? this.props.handleSubmit : this.props.handleUpdate}>
+
+    <div className="grid">
+
+ <div className="column column-6">
+    <Form.Item  label="Full Name"  >
+            <Input name="fullname" placeholder="Enter Full Name" id="fullname"  value={this.props.state.fullname} onChange={this.props.handleChange}/>
+          </Form.Item>
+        </div>
+
+        <div className="column column-6">
+         <Form.Item  label="Username"  >
+            <Input name="username" placeholder="Enter Username" id="username"  value={this.props.state.username} onChange={this.props.handleChange}/>
+          </Form.Item>
+ </div>
+ </div>
+
+ <div className="grid">
+ <div className="column column-6">
+         <Form.Item  label="Password"  >
+            <Input name="acc_password" type="password" placeholder="Enter Password" id="acc_password"  value={this.props.state.acc_password} onChange={this.props.handleChange}/>
+          </Form.Item>
+      </div>
+ <div className="column column-6">
+        <Form.Item label="Position" >
+          <Select
+        showSearch
+        style={{ width: 200 }}
+        placeholder="Select a position"
+        optionFilterProp="children"   id="position" name="position"
+        onChange={this.props.handlePosition} value={this.props.state.position}
+        filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+  >
+      <Option value="Admin">Admin</Option>
+      <Option value="Cashier">Cashier</Option>
+      <Option value="Mobile Attendant">Mobile Attendant</Option>
+      <Option value="Supervisor">Supervisor</Option>
+      <Option value="Waiter">Waiter</Option>
+      {/*<Option value="Waitress">Waitress</Option> */}
+  </Select>
+         </Form.Item>
+         </div>
+ </div>
+
+
+  <div className="grid">
+         <div className="column column-12"><Text mark type="secondary">Select to Assign Task </Text>  </div>
+         </div>
+         <div className="grid">
+          <div className="column column-4">
+        <Form.Item label="User Management">
+          <Select
+              mode="multiple" id="user"
+              style={{ width: '100%' }}
+              placeholder="Please select"   value={this.props.state.user}
+              onChange={this.props.handleChangeUser} >
+                <Option value="addUser">Add User</Option>
+                <Option value="editUser">Edit User</Option>
+                <Option value="delUser">Delete User</Option>
+        </Select>
+        </Form.Item>
+       </div>
+
+      <div className="column column-4">
+        <Form.Item label="Supplier">
+            <Select id="supplier"
+                mode="multiple"
+                style={{ width: '100%' }}  value={this.props.state.supplier}
+                placeholder="Please select"
+                  onChange={this.props.handleChangeSupplier}  >
+
+              <Option value="addSupplier">Add Supplier</Option>
+              <Option value="editSupplier">Edit Supplier</Option>
+              <Option value="delSupplier">Delete Supplier</Option>
+          </Select>
+        </Form.Item>
+       </div>
+
+       <div className="column column-4">
+        <Form.Item label="Sales">
+            <Select
+                  mode="multiple" id="sales"
+                  style={{ width: '100%' }}
+                  placeholder="Please select"
+                  value={this.props.state.sales}
+                  onChange={this.props.handleChangeSales}>
+
+                    <Option value="addSales">Add Sales</Option>
+                    <Option value="editSales">Edit Sales</Option>
+                    <Option value="delSales">Delete Sales</Option>
+            </Select>
+        </Form.Item>
+        </div>
+
+  </div>
+
+  <div className="grid">
+
+       <div className="column column-4">
+
+          <Form.Item label="Hall">
+                  <Select
+                        mode="multiple"
+                        style={{ width: '100%' }}   value={this.props.state.hall}
+                        placeholder="Please select"
+                        id="hall" onChange={this.props.handleChangeHall}>
+                    <Option value="addHall">Add Hall</Option>
+                    <Option value="editHall">Edit Hall</Option>
+                    <Option value="delHall">Delete Hall</Option>
+                </Select>
+            </Form.Item>
+       </div>
+
+        <div className="column column-4">
+        <Form.Item label="Table">
+            <Select id="table"
+                mode="multiple"
+                style={{ width: '100%' }}   value={this.props.state.table}
+                placeholder="Please select"
+                  onChange={this.props.handleChangeTable}  >
+
+              <Option value="addTable">Add Table</Option>
+              <Option value="editTable">Edit Table</Option>
+              <Option value="delTable">Delete Table</Option>
+          </Select>
+        </Form.Item>
+       </div>
+
+       <div className="column column-4">
+        <Form.Item label="Seat">
+                <Select
+                  mode="multiple"
+                  style={{ width: '100%' }}   value={this.props.state.seat}
+                  placeholder="Please select"
+                  id="seat"  onChange={this.props.handleChangeSeat}>
+              <Option value="addSeat">Add Seat</Option>
+              <Option value="editSeat">Edit Seat</Option>
+              <Option value="delSeat">Delete Seat</Option>
+          </Select>
+        </Form.Item>
+
+        </div>
+
+ </div>
+
+
+
+  <div className="grid">
+
+
+        <div className="column column-4">
+            <Form.Item label="Menu">
+                <Select
+                      mode="multiple" id="menu"
+                      style={{ width: '100%' }}
+                      placeholder="Please select"   value={this.props.state.menu}
+                       onChange={this.props.handleChangeMenu}>
+
+                    <Option value="addMenu">Add Menu</Option>
+                    <Option value="editMenu">Edit Menu</Option>
+                    <Option value="delMenu">Delete Menu</Option>
+                </Select>
+            </Form.Item>
+       </div>
+
+
+       <div className="column column-4">
+
+          <Form.Item label="Purchases">
+                  <Select
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        placeholder="Please select"   value={this.props.state.purchases}
+                        id="purchases" onChange={this.props.handleChangePurchases}>
+                    <Option value="addPurchases">Add Purchases</Option>
+                    <Option value="editPurchases">Edit Purchases</Option>
+                    <Option value="delPurchases">Delete Purchases</Option>
+                </Select>
+            </Form.Item>
+       </div>
+       <div className="column column-4">
+        <Form.Item label="Acquisition">
+                <Select
+                  mode="multiple"
+                  style={{ width: '100%' }}   value={this.props.state.acquisition}
+                  placeholder="Please select"
+                  id="acquisition"  onChange={this.props.handleChangeAcquisition}>
+              <Option value="addToKitchen">Allocate Kitchen</Option>
+              <Option value="editAllocation">Edit Allocation</Option>
+              <Option value="addFinished">Add Finished Product</Option>
+          </Select>
+        </Form.Item>
+
+        </div>
+
+ </div>
+
+ <div className="grid">
+ <div className="column column-12">
+   <Form.Item>
+       <Button  type="secondary" style={Styles.button} onClick={reset} > Clear Form</Button>
+
+       <Button  type="primary"  style={Styles.button} htmlType="submit">
+         <Icon type="user-add" />
+              {this.props.state.create? "Add User" : "Update User"}
+          </Button>
+
+    </Form.Item>
+  </div>
+
+ </div>
+
+ <div className="grid">
+
+     <div className="column column-12">
+
+     {  result.sending ? <Alert
+          message="Error"
+          description={result.message}
+          type="error"
+          showIcon
+        /> : ''}
+
+      </div>
+ </div>
+   </Form>
+ </div>
+
+ </div>
+
+    )
+  }
+}
+
+const mapStateToProps = (state)=> {
+    return {
+        result: state.form.result
+
+    }
+}
+const mapDispatchToProps = (dispatch)=>{
+return {}
+}
+export default connect(mapStateToProps,mapDispatchToProps)(CreateUser);

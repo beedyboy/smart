@@ -1,0 +1,2 @@
+ALTER TABLE `purchases` CHANGE `created_at` `created_at` VARCHAR(30) NULL DEFAULT NULL, CHANGE `updated_at` `updated_at` VARCHAR(30) NULL DEFAULT NULL;
+ALTER TABLE `purchasesTrails` CHANGE `created_at` `created_at` VARCHAR(30) NULL DEFAULT NULL, CHANGE `updated_at` `updated_at` VARCHAR(30) NULL DEFAULT NULL;

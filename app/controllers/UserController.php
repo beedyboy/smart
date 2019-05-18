@@ -59,9 +59,7 @@ $roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $pur
 
 array_walk($roleArray, 'trim_value');
 
-//var_dump($roleArray);
-//return;
-//die;
+
 $ary = [];
 
 	  $UserList  = $this->User->find();
@@ -141,7 +139,6 @@ $id = $data['id'];
 $roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
 
 $role = implode(",", $roleArray);
-		//$out['data'] = $data['position'];
 
 
 							///search for all users with this new name
@@ -176,7 +173,7 @@ $role = implode(",", $roleArray);
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "error";
 								$result['msg'] = "Error: User\'s record was not updated. Please try again later";
 							endif;
 				else:
