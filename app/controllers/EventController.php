@@ -157,7 +157,7 @@ public function store()
 							$data['msg']  =   'New Event has been added successfully';
    
 				  		else:
-				  		$data['status'] = "db_error";
+				  		$data['status'] = "Menu";
 						$data['msg'] = "Error: Event was not added. Please try again later";
 				 			
 
@@ -257,7 +257,7 @@ public function update()
 						  	
    
 				  		else:
-				  		$data['status'] = "db_error";
+				  		$data['status'] = "Menu";
 						$data['msg'] = "Error: Event was not updated. Please try again later";
 				 			
 

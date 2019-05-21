@@ -1,263 +1,227 @@
-import React, { PureComponent } from 'react'
-import {connect} from 'react-redux'
-import {Styles} from '../../Config'
+        import React, { PureComponent, Suspense } from 'react'
+        import {Styles} from '../Config'
+        import {connect} from 'react-redux'
+        import {Helmet} from "react-helmet";
+        import PageLoading from '../components/loading/PageLoading'
+        import LocalList from '../components/inventory/LocalList'
+        import BarList from '../components/inventory/BarList'
+        import ContinentalList from '../components/inventory/ContinentalList'
+        import * as actions from '../store/actions/inventoryActions'
+        import '../layout.css'
 
-import { Typography,  Button, Select, Form, Input, Icon, Alert  } from 'antd';
-
+import { Divider,  Button, Tooltip, Select, Form, Alert, Icon, Input, Spin, Typography } from 'antd';
 const Option = Select.Option;
+
 const {  Text } = Typography;
 
-class CreateUser extends PureComponent {
+class ProductMenu extends PureComponent {
+        state = {
+            id:'',
+            kitchen: '',
+            product_name: '',
+            price:'',
+            create:true,
+            tables: []
+        }
 
-  render() {
-       const { result, reset } = this.props;
-    return (
+        reset=()=>{
+            this.setState({
+                ...this.state,
+                 id:'',
+                kitchen: '',
+                product_name: '',
+                price:'',
+                create:true,
+                tables: []
+            })
+        }
+        handleEdit = (data) => {
+            // console.log(data)
+             this.setState({
+                 id:    data.id,
+                 product_name: data.product_name,
+                 kitchen: data.kitchen,
+                 price: data.price,
+                 create: data.create
+             })
+        }
 
- <div className="grid">
+        componentDidMount(){
+                this.props.fetchContinental()
+                this.props.fetchBar()
+                this.props.fetchLocal()
+        }
 
- <div className="column column-12">
+        handleChange = (e)=> {
+        this.setState({
+        [e.target.id]: e.target.value
+        })
+        }
 
-    <Form layout="horizontal" onSubmit={this.props.state.create? this.props.handleSubmit : this.props.handleUpdate}>
+        handleKitchen = (value)=> {
+        this.setState({
+        kitchen:value
+        })
+        }
 
-    <div className="grid">
 
- <div className="column column-6">
-    <Form.Item  label="Full Name"  >
-            <Input name="fullname" placeholder="Enter Full Name" id="fullname"  value={this.props.state.fullname} onChange={this.props.handleChange}/>
+         handleSubmit=(e)=>{
+            e.preventDefault();
+       this.props.createProduct(this.state)
+              if(this.props.result.success !== true && this.props.result.error !== true) {
+                this.reset()
+
+            }
+
+        }
+
+         handleUpdate=(e)=>{
+            e.preventDefault();
+       this.props.updateProduct(this.state)
+
+        }
+
+        render() {
+
+        const {continental,local, bar, role, result} = this.props
+        const {product_name,kitchen, price} = this.state
+    const enabled =    product_name &&
+                           kitchen  &&
+                            price.length > 0;
+        return (
+
+
+<React.Fragment>
+<Helmet>
+       <title>Menu Management</title>
+       <meta name="description" content="Menu Management" />
+         </Helmet>
+
+
+        {(role && role.indexOf("addMenu") !== -1 )?
+         (
+         <React.Fragment>
+             <div className="grid" style={Styles.div}>
+
+ <div className="column offset-1 column-9">
+
+          <Text strong type="primary">Create Product</Text>
+  <Suspense fallback={<Spin/>}>
+        <Form layout="inline" onSubmit={this.state.create ? this.handleSubmit : this.handleUpdate}>
+
+         <Form.Item>
+
+<Tooltip placement="top" title="Enter product name">
+            <Input id="product_name" placeholder="Add an item"  value={this.state.product_name} onChange={this.handleChange} />
+</Tooltip>
           </Form.Item>
-        </div>
 
-        <div className="column column-6">
-         <Form.Item  label="Username"  >
-            <Input name="username" placeholder="Enter Username" id="username"  value={this.props.state.username} onChange={this.props.handleChange}/>
-          </Form.Item>
- </div>
- </div>
+             <Form.Item>
+<Tooltip placement="top" title="Select a Kitchen">
 
- <div className="grid">
- <div className="column column-6">
-         <Form.Item  label="Password"  >
-            <Input name="acc_password" type="password" placeholder="Enter Password" id="acc_password"  value={this.props.state.acc_password} onChange={this.props.handleChange}/>
-          </Form.Item>
-      </div>
- <div className="column column-6">
-        <Form.Item label="Position" >
           <Select
-        showSearch
-        style={{ width: 200 }}
-        placeholder="Select a position"
-        optionFilterProp="children"   id="position" name="position"
-        onChange={this.props.handlePosition} value={this.props.state.position}
-        filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+    showSearch
+    style={{ width: 200 }}
+    placeholder="Select a kitchen"
+    optionFilterProp="children"
+    onChange={this.handleKitchen}
+    value={this.state.kitchen}
+    filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
   >
-      <Option value="Admin">Admin</Option>
-      <Option value="Cashier">Cashier</Option>
-      <Option value="Mobile Attendant">Mobile Attendant</Option>
-      <Option value="Supervisor">Supervisor</Option>
-      <Option value="Waiter">Waiter</Option>
-      {/*<Option value="Waitress">Waitress</Option> */}
+        <Option value="Bar">Bar</Option>
+        <Option value="Continental">Continental</Option>
+        <Option value="Local">Local</Option>
+
   </Select>
+</Tooltip>
          </Form.Item>
-         </div>
- </div>
+<Form.Item>
 
+<Tooltip placement="top" title="Add product price">
+    <Input id="price" placeholder="Price"  value={this.state.price} onChange={this.handleChange} />
+</Tooltip>
+          </Form.Item>
 
-  <div className="grid">
-         <div className="column column-12"><Text mark type="secondary">Select to Assign Task </Text>  </div>
-         </div>
-         <div className="grid">
-          <div className="column column-4">
-        <Form.Item label="User Management">
-          <Select
-              mode="multiple" id="user"
-              style={{ width: '100%' }}
-              placeholder="Please select"   value={this.props.state.user}
-              onChange={this.props.handleChangeUser} >
-                <Option value="addUser">Add User</Option>
-                <Option value="editUser">Edit User</Option>
-                <Option value="delUser">Delete User</Option>
-        </Select>
-        </Form.Item>
-       </div>
-
-      <div className="column column-4">
-        <Form.Item label="Supplier">
-            <Select id="supplier"
-                mode="multiple"
-                style={{ width: '100%' }}  value={this.props.state.supplier}
-                placeholder="Please select"
-                  onChange={this.props.handleChangeSupplier}  >
-
-              <Option value="addSupplier">Add Supplier</Option>
-              <Option value="editSupplier">Edit Supplier</Option>
-              <Option value="delSupplier">Delete Supplier</Option>
-          </Select>
-        </Form.Item>
-       </div>
-
-       <div className="column column-4">
-        <Form.Item label="Sales">
-            <Select
-                  mode="multiple" id="sales"
-                  style={{ width: '100%' }}
-                  placeholder="Please select"
-                  value={this.props.state.sales}
-                  onChange={this.props.handleChangeSales}>
-
-                    <Option value="addSales">Add Sales</Option>
-                    <Option value="editSales">Edit Sales</Option>
-                    <Option value="delSales">Delete Sales</Option>
-            </Select>
-        </Form.Item>
-        </div>
-
-  </div>
-
-  <div className="grid">
-
-       <div className="column column-4">
-
-          <Form.Item label="Hall">
-                  <Select
-                        mode="multiple"
-                        style={{ width: '100%' }}   value={this.props.state.hall}
-                        placeholder="Please select"
-                        id="hall" onChange={this.props.handleChangeHall}>
-                    <Option value="addHall">Add Hall</Option>
-                    <Option value="editHall">Edit Hall</Option>
-                    <Option value="delHall">Delete Hall</Option>
-                </Select>
-            </Form.Item>
-       </div>
-
-        <div className="column column-4">
-        <Form.Item label="Table">
-            <Select id="table"
-                mode="multiple"
-                style={{ width: '100%' }}   value={this.props.state.table}
-                placeholder="Please select"
-                  onChange={this.props.handleChangeTable}  >
-
-              <Option value="addTable">Add Table</Option>
-              <Option value="editTable">Edit Table</Option>
-              <Option value="delTable">Delete Table</Option>
-          </Select>
-        </Form.Item>
-       </div>
-
-       <div className="column column-4">
-        <Form.Item label="Seat">
-                <Select
-                  mode="multiple"
-                  style={{ width: '100%' }}   value={this.props.state.seat}
-                  placeholder="Please select"
-                  id="seat"  onChange={this.props.handleChangeSeat}>
-              <Option value="addSeat">Add Seat</Option>
-              <Option value="editSeat">Edit Seat</Option>
-              <Option value="delSeat">Delete Seat</Option>
-          </Select>
-        </Form.Item>
-
-        </div>
-
- </div>
-
-
-
-  <div className="grid">
-
-
-        <div className="column column-4">
-            <Form.Item label="Menu">
-                <Select
-                      mode="multiple" id="menu"
-                      style={{ width: '100%' }}
-                      placeholder="Please select"   value={this.props.state.menu}
-                       onChange={this.props.handleChangeMenu}>
-
-                    <Option value="addMenu">Add Menu</Option>
-                    <Option value="editMenu">Edit Menu</Option>
-                    <Option value="delMenu">Delete Menu</Option>
-                </Select>
-            </Form.Item>
-       </div>
-
-
-       <div className="column column-4">
-
-          <Form.Item label="Purchases">
-                  <Select
-                        mode="multiple"
-                        style={{ width: '100%' }}
-                        placeholder="Please select"   value={this.props.state.purchases}
-                        id="purchases" onChange={this.props.handleChangePurchases}>
-                    <Option value="addPurchases">Add Purchases</Option>
-                    <Option value="editPurchases">Edit Purchases</Option>
-                    <Option value="delPurchases">Delete Purchases</Option>
-                </Select>
-            </Form.Item>
-       </div>
-       <div className="column column-4">
-        <Form.Item label="Acquisition">
-                <Select
-                  mode="multiple"
-                  style={{ width: '100%' }}   value={this.props.state.acquisition}
-                  placeholder="Please select"
-                  id="acquisition"  onChange={this.props.handleChangeAcquisition}>
-              <Option value="addToKitchen">Allocate Kitchen</Option>
-              <Option value="editAllocation">Edit Allocation</Option>
-              <Option value="addFinished">Add Finished Product</Option>
-          </Select>
-        </Form.Item>
-
-        </div>
-
- </div>
-
- <div className="grid">
- <div className="column column-12">
-   <Form.Item>
-       <Button  type="secondary" style={Styles.button} onClick={reset} > Clear Form</Button>
-
-       <Button  type="primary"  style={Styles.button} htmlType="submit">
-         <Icon type="user-add" />
-              {this.props.state.create? "Add User" : "Update User"}
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit" disabled={!enabled}
+          ><Icon type="gift" />
+              {this.state.create ? "Add" : "Save Update"}
           </Button>
+             <Button style={{ marginLeft: 8 }} onClick={this.reset}>
+              Clear
+            </Button>
+        </Form.Item>
 
-    </Form.Item>
-  </div>
 
- </div>
+        </Form>
+  </Suspense>
 
- <div className="grid">
-
-     <div className="column column-12">
-
-     {  result.sending ? <Alert
+   {  result.sending ? <Alert
           message="Error"
           description={result.message}
           type="error"
           showIcon
         /> : ''}
-
-      </div>
- </div>
-   </Form>
- </div>
+  </div>
 
  </div>
 
-    )
-  }
-}
+    <Divider />
+        </React.Fragment>
+         ): ''}
 
-const mapStateToProps = (state)=> {
-    return {
-        result: state.form.result
+ <div className="grid">
 
-    }
-}
-const mapDispatchToProps = (dispatch)=>{
-return {}
-}
-export default connect(mapStateToProps,mapDispatchToProps)(CreateUser);
+ <div className="column column-4" style={Styles.div}>
+     <ContinentalList role={role} continental={continental} click={this.handleEdit} />
+
+ </div>
+
+ <div className="column column-4" style={Styles.div}>
+       <Suspense fallback={<PageLoading/>}>
+<LocalList local={local} role={role} option={this.state} click={this.handleEdit} />
+       </Suspense>
+
+ </div>
+
+ <div className="column column-4" style={Styles.div}>
+ <BarList bar={bar} role={role} click={this.handleEdit}/>
+
+ </div>
+
+
+ </div>
+
+
+</React.Fragment>
+
+        )
+        }
+        }
+
+
+        const mapStateToProps = (state)=> {
+        // console.log(state)
+        return {
+        result: state.form.result,
+        continental: state.inventory.continental,
+        bar: state.inventory.bar,
+        local: state.inventory.local,
+        role: state.auth.role,
+        // seats: state.hall.seat
+        }
+        }
+        const mapDispatchToProps = (dispatch) => {
+        return {
+        createProduct:(data)=>dispatch(actions.createProduct(data)),
+        updateProduct:(data)=>dispatch(actions.updateProduct(data)),
+        fetchLocal: ()=> dispatch(actions.fetchLocal()),
+        fetchContinental:()=>dispatch(actions.fetchContinental()),
+        fetchBar: ()=> dispatch(actions.fetchBar())
+        }
+        }
+
+        export default
+        connect(mapStateToProps, mapDispatchToProps)(ProductMenu);

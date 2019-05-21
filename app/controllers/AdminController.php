@@ -276,7 +276,7 @@ public function profile()
                             $data['status'] = "success";
                             $data['msg']  =   'Admin record updated successfully';    
                         else:
-                        $data['status'] = "db_error";
+                        $data['status'] = "Menu";
                         $data['msg'] = "Error: Admin was not updated. Please try again later"; 
                         endif;
 
@@ -346,7 +346,7 @@ public function accPassword()
                             $data['status'] = "success";
                             $data['msg']  =   'Password updated successfully';    
                         else:
-                            $data['status'] = "db_error";
+                            $data['status'] = "Menu";
                             $data['msg'] = "Error: Password was not updated. Please try again later"; 
                         endif;
     
@@ -414,7 +414,7 @@ public function recovery()
                             $data['status'] = "success";
                             $data['msg']  =   'Admin updated successfully';    
                         else:
-                            $data['status'] = "db_error";
+                            $data['status'] = "Menu";
                             $data['msg'] = "Error: Admin was not updated. Please try again later"; 
                         endif;
 

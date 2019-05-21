@@ -36,13 +36,13 @@ class PosController extends Controller
 
  public function fetchMenu()
 {
-	$Product = new Product('products');
+	$Product = new Menu('menus');
 
 	$data = [];
 	$out = array('error' => false);
 		$shopId= $_GET['shopId'];
 		$value= $_GET['value'];
-		$params  = ['conditions'=> ['shopId = ?', 'product_name LIKE ?'], 'bind' => [$shopId, "%$value%"] ];
+		$params  = ['conditions'=> ['shopId = ?', 'name LIKE ?'], 'bind' => [$shopId, "%$value%"] ];
 	$Waiters = $Product->find($params);
 
 $out['data'] = $Waiters;
@@ -59,7 +59,7 @@ $out['data'] = $Waiters;
 	$data = [];
 	$out = array('error' => false);
 	$Orderdetail = new Orderdetail('orderdetails');
-	$Product = new Product('products');
+	$Menu = new Menu('menus');
 		$shopId= $_GET['shopId'];
 		$invoice= $_GET['invoice'];
 		$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
@@ -71,8 +71,8 @@ $i = 1;
 	$row = array(
 		'key'=>'key'.$i,
 		'id'=>$Order->id,
-		'product_id'=> $Order->product_id,
-		'product_name'=> $Product->findById($Order->product_id)->product_name,
+		'menu_id'=> $Order->menu_id,
+		'menu_name'=> $Menu->findById($Order->menu_id)->name,
 	 'qty'=>$Order->qty,
 		'price'=>$Order->price,
 		'discount'=>$Order->discount,
@@ -142,74 +142,64 @@ public function save(){
 
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
-
-	  $product_id = $data['productId'];
+$Menu = new Menu('menus');
+	$Orderdetail = new Orderdetail('orderdetails');
+		$Product = new Product('products');
+$Beedy = new Beedy();
 	  $invoice = $data['invoice'];
-	  //$qty = $data['qty'];
-	  $qty = 1;
+	  $menuId = $data['menuId'];
 	  $shopId = $data['shopId'];
 
-	$Orderdetail = new Orderdetail('orderdetails');
+			//get food under menu
+			$Find = $Menu->findById($menuId);
+			$food = $Find->food;
 
-	//first check if product already exists in the table for current session
+			$compute = explode(',',$food);
+			  $qty = 1;
+
+					//first check if menu already exists in the table for current session
 	//if yes check products quantity in store	//update otherwise create
-$Beedy = new Beedy();
-	$exist  =  $Beedy->orderExist($shopId, $product_id, $invoice);
-//productDetails
-
-$price  =  $Beedy->productDetails($product_id, "price");
-$pQty  =  $Beedy->productDetails($product_id, "qty");
-//$price = $productDetails->price;
-	if($pQty >= $qty){
-
-	$total = $price * $qty;
-
-	if($exist == 'true'):
-		//update
-						$orders =   $Beedy->OrderDetail($shopId, $product_id, $invoice);
-$id = 0;
-$newQty = 0;
-$newTotal=0;
-foreach($orders as $ord):
-$id = $ord->id;
-$newQty = $ord->qty + $qty;
-$newTotal = $ord->total + $price;
-
-endforeach;
+	$exist  =  $Beedy->orderExist($shopId, $menuId, $invoice);
 
 
-									$fields = [
-																					'qty' => $newQty,
-																					'price' => $price,//incase of discount, use this valu for total calc
-																					'total' => $newTotal,
-																					'updated_at' => '',
-																		];
-											//send menu
-												$send = $Orderdetail->update($fields, (int)$id);
-										$send2 = $Beedy->minusProduct((int)$product_id, $qty);
-												if($send):
+	$totalProductPrice = 0;
+	$low = false;
+	//check through each item
+ 			foreach($compute as $product_id):
 
-											$result['status'] = "success";
-											$result['msg']  =   'Menu Item has been updated successfully';
-												else:
+				 $name  = $Product->findById((int)$product_id)->product_name;
+			$price  =  $Beedy->productDetails($product_id, "price");
+   $pQty  =  $Beedy->productDetails($product_id, "qty");
 
-								$result['status'] = "db_error";
-								$result['msg'] = "Error: Menu Item  was not updated. Please try again later";
-							endif;
- else:
+			$add = $price * $qty;
+			$totalProductPrice +=$add;
+
+			//check if any of the product qty is zero or less
+			//if it is less than qty, then return false
+			if($qty > $pQty):
+	$result['status'] = "error";
+			$result['msg'] = "Error: {$name} is out of stock. please contact kitchen to update product quantity";
+		    echo json_encode($result);
+						return;
+				endif;
+
+			endforeach;
+
+							if($exist == 'false'):
+
 	//create
 								$fields = [
-																		'product_id' => $product_id,
+																		'menu_id' => $menuId,
 																		'qty' => $qty,
 																		'invoice' => $invoice,
-																		'price' => $price,//incase of discount, use this valu for total calc
-																		'total' => $total,
+																		'price' => $totalProductPrice,//incase of discount, use this valu for total calc
+																		'total' => $totalProductPrice,
 																		'shopId' => $shopId,
 																		'created_at' => '',
 															];
 								//send menu
 									$send = $Orderdetail->insert($fields);
-										$send2 = $Beedy->minusProduct((int)$product_id, $qty);
+										$send2 = $Beedy->minusProduct($compute, $qty);
 												if($send):
 
 																$result['status'] = "success";
@@ -217,16 +207,47 @@ endforeach;
 
 															else:
 
-																$result['status'] = "db_error";
+																$result['status'] = "Menu";
 																$result['msg'] = "Error: Item was not allocated. Please try again later";
 															endif;
- endif;
-	}
-else {
-	$result['status'] = "error";
-			$result['msg'] = "Error: Menu is out of stock. please contact kitchen to update product quantity";
+											else:
+											//dnd('existed');
+											//update
+						$orders =   $Beedy->OrderDetail($shopId, $menuId, $invoice);
+						$id = 0;
+						$newQty = 0;
+						$newTotal=0;
+						foreach($orders as $ord):
+									$id = $ord->id;
+									$newQty = $ord->qty + $qty;
+									$newTotal = $ord->total + $totalProductPrice;
 
-}
+						endforeach;
+//dnd($orders);
+
+									$fields = [
+																					'qty' => $newQty,
+																					'price' => $totalProductPrice,//incase of discount, use this valu for total calc
+																					'total' => $newTotal,
+																					'updated_at' => '',
+																		];
+											//send menu
+												$send = $Orderdetail->update($fields, (int)$id);
+										$send2 = $Beedy->minusProduct($compute, $qty);
+												if($send):
+
+											$result['status'] = "success";
+											$result['msg']  =   'Menu Item has been updated successfully';
+												else:
+
+								$result['status'] = "Menu";
+								$result['msg'] = "Error: Menu Item  was not updated. Please try again later";
+							endif;
+ endif;
+
+
+//productDetails
+
   echo json_encode($result);
 }
 
@@ -271,7 +292,7 @@ public function updateFinishedProduct(){
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Finished product was not processed. Please try again later";
 							endif;
 
@@ -329,14 +350,14 @@ $data  = [];
 public function saveOrder(){
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 $date = date("Y-m-d");
+	  $token = $data['token'];
 	  $invoice = $data['invoice'];
 	  $shopId = $data['shopId'];
-	  $kitchen = $data['kitchen'];
+	  $kitchen = ($data['kitchen'])? $data['kitchen']: 'Local';
 	  $type = ($data['type']) ? 'Dine-In': 'Take Out';
-	  $table = $data['table'];
-	  $seat = $data['seat'];
-			$token = $data['token'];
-			$waiter = $data['waiter'];
+	  $table =($data['table'])?  $data['table']: '';
+	  $seat = ($data['seat'])?  $data['seat']: '';
+			$waiter = ($data['waiter'])?  $data['waiter']: '';
 
 	$User = new User('users');
  	$Query  = $User->findByToken($token);
@@ -362,10 +383,27 @@ $discount += $Details->discount;
 
 endforeach;
 	$balance = 	$amount;
+
+
+	//cal nhil
+$nhilper = 	tax($amount,0.024);
+$fundper = 	tax(round($nhilper,2),0.024);
+$vatper = 	tax(round($fundper,2),0.11);
+
+
+
+	//calculate now
+	$nhil = round($nhilper,2);
+	$fund = round($fundper,2);
+ 
 	//calc vat
-	$per = 0.175;
-	$vat =  $per * $amount ;
-	$vat = round($vat,2);
+
+	$vat = round($vatper,2);
+
+	$kitchen_status = "Pending";
+	if($kitchen ==="Bar"):
+	$kitchen_status = "Approved";
+	endif;
 //productDetails
 if($type == 'Dine-In'):
 									$fields = [
@@ -378,9 +416,12 @@ if($type == 'Dine-In'):
 																					'period' => $date,
 																					'waiter' => $waiter,
 																					'balance' => $balance,
+																					'nhil'=>$nhil,
+																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'ord_type' => $type,
 																					'kitchen' => $kitchen,
+																					'kitchen_status'=>$kitchen_status,
 																					'created_at' => '',
 																					'created_by' => $userId,
 																		];
@@ -393,9 +434,12 @@ if($type == 'Dine-In'):
 																					'period' => $date,
 																					'waiter' => $waiter,
 																					'balance' => $balance,
+																					'nhil'=>$nhil,
+																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'ord_type' => $type,
 																					'kitchen' => $kitchen,
+																					'kitchen_status'=>$kitchen_status,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
 																		];
@@ -409,8 +453,11 @@ if($type == 'Dine-In'):
 																					'balance' => $balance,
 																					'period' => $date,
 																					'ord_type' => $type,
+																					'nhil'=>$nhil,
+																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'kitchen' => $kitchen,
+																					'kitchen_status'=>$kitchen_status,
 																					'created_at' => '',
 																					'created_by' => $userId,
 																		];
@@ -422,8 +469,11 @@ if($type == 'Dine-In'):
 																					'balance' => $balance,
 																					'period' => $date,
 																					'ord_type' => $type,
+																					'nhil'=>$nhil,
+																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'kitchen' => $kitchen,
+																					'kitchen_status'=>$kitchen_status,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
 																		];
@@ -458,7 +508,7 @@ public function saveNewOrder($fields){
 
 															else:
 
-																$result['status'] = "db_error";
+																$result['status'] = "Menu";
 																$result['msg'] = "Error: Order not sent. Please try again later";
 															endif;
 
@@ -479,7 +529,7 @@ $result = array();
 
 															else:
 
-																$result['status'] = "db_error";
+																$result['status'] = "Menu";
 																$result['msg'] = "Error: Order not updated. Please try again later";
 															endif;
 
@@ -550,14 +600,21 @@ $d = "PENDING";
 				$shopId=$_GET['shopId'];
 
 				$Orderdetail = new Orderdetail('orderdetails');
+ 		$Menu = new Menu('menus');
 				$Beedy = new Beedy();
 				$params = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId,  $invoice]  ];
 						$data  = $Beedy->loadTblCond2($Orderdetail,$params);
 
 						foreach($data as $dat):
 						$qty = $dat->qty;
-						$id = $dat->product_id;
-						$Beedy->plusProduct($id, $qty);
+						$id = $dat->menu_id;
+			//get food under menu
+						$Find = $Menu->findById($id);
+						$food = $Find->food;
+
+							$compute = explode(',',$food);
+						$Beedy->plusProduct($compute, $qty);
+
 
 						endforeach;
 
@@ -569,7 +626,7 @@ $del  = $Orderdetail->bulkDelete($params);
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Cart was not emptied. Please try again later";
 							endif;
 
@@ -585,15 +642,21 @@ $del  = $Orderdetail->bulkDelete($params);
 	{
 		$result = array();
 				$id = $_GET['id'];
-				$shopId=$_GET['shopId'];
+				$shopId=$_GET['shopId'] ;
+				$Menu = new Menu('menus');
+	$Orderdetail = new Orderdetail('orderdetails');
+		$Product = new Product('products');
+$Beedy = new Beedy();
 
-				$Orderdetail = new Orderdetail('orderdetails');
-				$Beedy = new Beedy();
+			//get food under menu
+			$Find = $Menu->findById($id);
+			$food = $Find->food;
+
+			$compute = explode(',',$food);
 				$data  = $Orderdetail->findById($id);
 
 						$qty = $data->qty;
-						$pid = $data->product_id;
-						$Beedy->plusProduct($pid, $qty);
+						$Beedy->plusProduct($compute, $qty);
 
 
 		$params = ['conditions'=> ['shopId = ?', 'id = ?'], 'bind' => [$shopId,  $id]  ];
@@ -605,7 +668,7 @@ $del  = $Orderdetail->bulkDelete($params);
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Item was not deleted. Please try again later";
 							endif;
 
@@ -622,7 +685,7 @@ $del  = $Orderdetail->bulkDelete($params);
 	{
 		$result = array();
 				$id = $_GET['id'];
-				$product_id = $_GET['productId'];
+				$menu_id = $_GET['menu_id'];
 				$invoice = $_GET['invoice'];
 
 				$qty=$_GET['qty'];
@@ -630,13 +693,39 @@ $del  = $Orderdetail->bulkDelete($params);
 				$shopId=$_GET['shopId'];
 
 
+$Menu = new Menu('menus');
+			$Product = new Product('products');
+
 				$Orderdetail = new Orderdetail('orderdetails');
 				$Beedy = new Beedy();
 				$data  = $Orderdetail->findById($id);
 
 
-				 $price  =  $Beedy->productDetails($product_id, "price");
-					$pQty  =  $Beedy->productDetails($product_id, "qty");
+				$Find = $Menu->findById($data->menu_id);
+			$food = $Find->food;
+
+			$compute = explode(',',$food);
+$totalProductPrice=0;
+foreach($compute as $product_id):
+
+				 $name  = $Product->findById((int)$product_id)->product_name;
+			$price  =  $Beedy->productDetails($product_id, "price");
+   $pQty  =  $Beedy->productDetails($product_id, "qty");
+
+			$add = $price * $qty;
+			$totalProductPrice +=$add;
+
+			//check if any of the product qty is zero or less
+			//if it is less than qty, then return false
+			if($qty > $pQty):
+	$result['status'] = "error";
+			$result['msg'] = "Error: {$name} is out of stock. please contact kitchen to update product quantity";
+		    echo json_encode($result);
+						return;
+				endif;
+
+			endforeach;
+
 
 				//check if qty changed is same
 				//if($newQty === $qty):
@@ -644,13 +733,15 @@ $del  = $Orderdetail->bulkDelete($params);
 
 					if(empty($newQty)):
 				//take old quantity and add to product, then delete from order
-									$Beedy->plusProduct($product_id, $qty);
+						$Beedy->plusProduct($compute, $qty);
 							$clearParams = ['conditions'=> ['shopId = ?', 'id = ?'], 'bind' => [$shopId,  $id]  ];
 
 							echo	$this->clearCartItem($clearParams);
 ////
 				elseif($newQty > $qty): //greater than initial cart qty
 				//minus the difference and minus from product then add to order
+
+
 							$diff = $newQty - $qty;
 											if($pQty >= $diff){
 
@@ -664,14 +755,14 @@ $del  = $Orderdetail->bulkDelete($params);
 																					];
 														//send menu
 															$send = $Orderdetail->update($fields, (int)$id);
-													$send2 = $Beedy->minusProduct((int)$product_id, $diff);
+													$send2 = $Beedy->minusProduct($compute, $diff);
 															if($send2):
 
 														$result['status'] = "success";
 														$result['msg']  =   'Quantity updated successfully';
 															else:
 
-											$result['status'] = "db_error";
+											$result['status'] = "Menu";
 											$result['msg'] = "Error: Quantity  was not updated. Please try again later";
 										endif;
 				}
@@ -682,7 +773,7 @@ $del  = $Orderdetail->bulkDelete($params);
 			}
 			echo json_encode($result);
 
-  	die();
+  return;
 				elseif($newQty !== 0  && $newQty < $qty):
 					//minus from order, add to difference to product
 	$diff =  $qty - $newQty;
@@ -697,14 +788,14 @@ $del  = $Orderdetail->bulkDelete($params);
 																					];
 														//send menu
 															$send = $Orderdetail->update($fields, (int)$id);
-															$Beedy->plusProduct($product_id, $diff);
+															$Beedy->plusProduct($compute, $diff);
 														if($send):
 
 														$result['status'] = "success";
 														$result['msg']  =   'Qty updated successfully';
 															else:
 
-													$result['status'] = "db_error";
+													$result['status'] = "Menu";
 													$result['msg'] = "Error: Qty  was not updated. Please try again later";
 										endif;
 				 echo json_encode($result);
@@ -731,7 +822,7 @@ $del  = $Orderdetail->bulkDelete($params);
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Item was not deleted. Please try again later";
  	endif;
  return json_encode($result);
@@ -741,7 +832,8 @@ $del  = $Orderdetail->bulkDelete($params);
 
 
 
- public function fetchReceivable()
+
+	public function fetchReceivable()
 {
 	$data  = [];
 
@@ -756,27 +848,29 @@ $d = "PENDING";
 	$User = new User('users');
 
 		$params  = ['conditions'=> ['shopId = ? ',  'status = ? '],	'bind' => [$shopId, $d] ];
-	$Baskets = $Sale->find($params);
+	$Receivables = $Sale->find($params);
 
 $i= 0;
-foreach($Baskets as $Basket):
+foreach($Receivables as $Receivable):
 
 	$row = array(
 		'key'=>'key'.$i,
-		'id'=>$Basket->id,
-		'invoice_number'=>$Basket->invoice_number,
-		'amount'=> $Basket->amount,
-	'balance'=>$Basket->balance,
-		'table'=> $Table->findById($Basket->tid)->name,
-		'seat'=> $Seat->findById($Basket->sid)->name,
-	'ord_type'=>$Basket->ord_type,
-		'kitchen'=>$Basket->kitchen,
-	'waiter'=>	$User->findById($Basket->waiter)->fullname,
-	'cashier'=>	$User->findById($Basket->cashier)->fullname,
-		'created_at'=>$Basket->created_at,
-		'created_by'=>	$User->findById($Basket->created_by)->fullname,
-		'updated_by'=>$User->findById($Basket->updated_by)->fullname,
-		'updated_at'=>$Basket->updated_at
+		'id'=>$Receivable->id,
+		'invoice_number'=>$Receivable->invoice_number,
+		'amount'=> $Receivable->amount,
+	'balance'=>$Receivable->balance,
+		'table'=> $Table->findById($Receivable->tid)->name,
+		'seat'=> $Seat->findById($Receivable->sid)->name,
+	'ord_type'=>$Receivable->ord_type,
+		'kitchen'=>$Receivable->kitchen,
+		'kitchen_status'=>$Receivable->kitchen_status,
+		'approved_by'=>$User->findById($Receivable->approved_by)->fullname,
+	'waiter'=>	$User->findById($Receivable->waiter)->fullname,
+	'cashier'=>	$User->findById($Receivable->cashier)->fullname,
+		'created_at'=>$Receivable->created_at,
+		'created_by'=>	$User->findById($Receivable->created_by)->fullname,
+		'updated_by'=>$User->findById($Receivable->updated_by)->fullname,
+		'updated_at'=>$Receivable->updated_at
 	);
 
 	$data[]=$row;
@@ -790,25 +884,55 @@ foreach($Baskets as $Basket):
 
 }
 
-
-
-public  function payNow(){
-			$data  = [];
-
-				$out = array('error' => false);
+public  function kitchenApprove(){
+		 $result = array('error' => false);
 				$Sale = new Sale('sales');
    	$User = new User('users');
 
 			$d = "PENDING";
 	  $token = $_GET['token'];
 	  $id = $_GET['id'];
-		 $status ="PAID";
+		 $status ="Approved";
 
 					$Query  = $User->findByToken($token);
 
 					if($Query):
 					$userId = $Query->id;
 
+						endif;
+
+					$fields = [
+													'kitchen_status' => $status,
+										 		'approved_by' => $userId,
+										];
+
+								$send = $Sale->update($fields, (int)$id);
+					if($send):
+
+							$result['status'] = "success";
+							$result['msg']  =   'Transaction Completed';
+
+						else:
+
+							$result['status'] = "error";
+							$result['msg'] = "Error:Please try again later";
+						endif;
+ echo json_encode($result);
+
+}
+
+
+public  function payNow(){
+			 $result = array('error' => false);
+				$Sale = new Sale('sales');
+   	$User = new User('users');
+			$d = "PENDING";
+	  $token = $_GET['token'];
+	  $id = $_GET['id'];
+		 $status ="PAID";
+					$Query  = $User->findByToken($token);
+					if($Query):
+					$userId = $Query->id;
 						endif;
 
 					$fields = [
@@ -824,18 +948,12 @@ public  function payNow(){
 
 						else:
 
-							$result['status'] = "db_error";
+							$result['status'] = "Menu";
 							$result['msg'] = "Error:Please try again later";
 						endif;
+						echo json_encode($result);
 
 }
-
-
-
-
-
-
-
 
 
 public  function payAllBalances(){

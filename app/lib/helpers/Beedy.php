@@ -31,7 +31,7 @@ public function PasswordDecider() {
 public function orderExist($shopId=0, $product_id=0, $invoice='')
 {
 			$Order= new Orderdetail('orderdetails');
-$params = [	 'conditions'=> ['shopId = ?', 'product_id = ?', 'invoice = ?'],
+$params = [	 'conditions'=> ['shopId = ?', 'menu_id = ?', 'invoice = ?'],
 											'bind' => [$shopId, $product_id, $invoice] ];
 	$exist  = $Order->find($params);
 
@@ -53,7 +53,7 @@ public function productDetails($product_id, $field)
 public function OrderDetail($shopId=0, $product_id=0, $invoice='')
 {
 	$Order= new Orderdetail('orderdetails');
-$params = [	 'conditions'=> ['shopId = ?', 'product_id = ?', 'invoice = ?'],
+$params = [	 'conditions'=> ['shopId = ?', 'menu_id = ?', 'invoice = ?'],
 											'bind' => [$shopId, $product_id, $invoice] ];
 
 		return $Order->find($params);
@@ -62,24 +62,68 @@ $params = [	 'conditions'=> ['shopId = ?', 'product_id = ?', 'invoice = ?'],
 
 
 
-public function minusProduct($id, $qty){
+public function minusProduct($compute, $qty){
 
 			$Product = new Product('products');
-		 $pQty = $Product->findById((int)$id)->qty;
+$Menu = new Menu('menus');
+foreach($compute as $product_id):
+
+				 //$Product->findById((int)$item)->product_name;
+			  $pQty = $Product->findById((int)$product_id)->qty;
 
 			$updQty =  $pQty - $qty; // this means 5 - 2
 
-		if($updQty >= 0) {
+if($updQty >= 0) {
 
 									$fields = [ 'qty' => $updQty ];
 
-			return						$send = $Product->update($fields, (int)$id);
+								$send = $Product->update($fields, (int)$product_id);
 
 							}
 
 
+//productDetails
+			endforeach;
+
+return	true;
+
 }
 
+
+public function plusProduct($compute, $qty){
+
+			$Product = new Product('products');
+$Menu = new Menu('menus');
+			if(is_array($compute)){
+
+					foreach($compute as $product_id):
+						$pQty = $Product->findById((int)$product_id)->qty;
+
+					$updQty =  $pQty + $qty; // this means 5 + 2
+
+										$fields = [ 'qty' => $updQty ];
+
+									$send = $Product->update($fields, (int)$product_id);
+
+					//productDetails
+								endforeach;
+			}
+			else {
+					$pQty = $Product->findById((int)$compute)->qty;
+
+					$updQty =  $pQty + $qty; // this means 5 + 2
+
+										$fields = [ 'qty' => $updQty ];
+
+									$send = $Product->update($fields, (int)$compute);
+
+									echo $compute;
+			}
+
+
+return	true;
+
+}
 
 
 
@@ -92,26 +136,6 @@ public function getColById($obj,$id, $field)
 public function loadTblCond2($obj,$params)
 {
  return $obj->find($params);
-}
-
-
-public function plusProduct($id, $qty){
-
-	 $result = array();
-$Product = new Product('products');
-		 $pQty = $Product->findById((int)$id)->qty;
-
-$updQty =  $pQty + $qty; // this means 5 - 2
-
-		if($updQty >= 0) {
-
-									$fields = [ 'qty' => $updQty ];
-
-			return						$send = $Product->update($fields, (int)$id);
-
-							}
-
-
 }
 
 public function getColTotalByInvoice($obj,$invoice, $field)
@@ -172,7 +196,10 @@ public function totalUser($shopId)
 {
 
 $User = new User('users');
-$ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
+$status = "Active";
+		$ary  = ['conditions'=> ['shopId = ?','acc_status =?'], 'bind' => [$shopId,$status] ];
+
+//$ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
  		$qUser = $User->find($ary);
  return count( $qUser);
 }
@@ -193,7 +220,7 @@ $ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
 }
 public function totalShop()
 {
-$Shop = new Shop('shops'); 
+$Shop = new Shop('shops');
  		$qUser = $Shop->find();
  return count($qUser);
 }

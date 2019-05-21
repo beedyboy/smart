@@ -2,14 +2,14 @@
 /**
 *
 */
-class UserController extends Controller
+class MenuController extends Controller
 {
 
 	function __construct($controller, $action)
 	{
 		# code...
 		parent::__construct($controller, $action);
-		$this->load_model('User');
+		$this->load_model('Menu');
 
 
 	}
@@ -18,16 +18,42 @@ class UserController extends Controller
 public function list()
 {
 	$data = [];
+	$datas = [];
 	$out = array('error' => false);
 
+		$User = new User('users');
+		$Product = new Product('products');
 		$shopId= $_GET['shopId'];
 
-	$status = "Active";
-		$params  = ['conditions'=> ['shopId = ?','acc_status =?'], 'bind' => [$shopId,$status] ];
+		$params  = ['conditions'=> ['shopId = ?'], 'bind' => [$shopId] ];
 
-	$user  = $this->User->find($params);
+	$menus  = $this->Menu->find($params);
 
-  	$out['data'] = $user;
+	foreach($menus as $menu)
+	{
+			$compute = explode(',',$menu->food);
+			$row = array(
+				'id'=>$menu->id,
+				'food'=> array_map('intval', $compute),
+				'name'=>$menu->name,
+				'created_by'=>	$User->findById($menu->created_by)->fullname,
+				'created_at'=>$menu->created_at,
+				'updated_by'=>$User->findById($menu->updated_by)->fullname,
+				'updated_at'=>$menu->updated_at
+			);
+
+				//print_r($compute);
+					foreach($compute as $key=>$item):
+
+								$row['options'][] = $Product->findById((int)$item)->product_name ;
+								$row['price'][] = $Product->findById((int)$item)->price ;
+
+
+					endforeach;
+					$data[]=$row;
+	}
+
+$out['data'] = $data;
 
 	   echo json_encode($out);
 
@@ -37,69 +63,52 @@ public function list()
 
 
 
-
 public function save(){
 
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 
-$sales = (empty($data['sales'])) ? [] : $data['sales'];
-$user = (empty($data['user'])) ? [] :$data['user'] ;
-$menu = (empty($data['menu'])) ? [] : $data['menu'];
-$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
-$hall = (empty($data['hall'])) ? [] : $data['hall'];
-$seat = (empty($data['seat'])) ? [] : $data['seat'];
+	  $token = $data['token'];
 
-$table = (empty($data['table'])) ? [] : $data['table'];
-$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
-$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
+	$User = new User('users');
+		$Product = new Product('products');
+$Query  = $User->findByToken($token);
 
+	if($Query):
+	$userId = $Query->id;
 
-$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
+	endif;
+$food = (empty($data['food'])) ? [] : $data['food'];
 
-array_walk($roleArray, 'trim_value');
+$name= "";
+	foreach($data['food'] as $key=>$item):
+								$name.=$Product->findById((int)$item)->product_name.' with ';
 
+ endforeach;
 
-$ary = [];
-
-	  $UserList  = $this->User->find();
-
-			foreach ($UserList as $key => $value) {
-					$ary[] = $value->username;
-			}
-				if(!in_array( $data['username'], $ary)):
-
-$role = implode(",", $roleArray);
+array_walk($food, 'trim_value');
+$name = rtrim($name,' with');
+$food = implode(",", $food);
 
 			$fields = [
-
-										'fullname' => $data['fullname'],
 										'shopId' => $data['shopId'],
-										'acc_email' => Input::get('acc_email'),
-										'username' => $data['username'],
-										'role' => $role,
-										'position' => $data['position'],
-										'acc_password' => password_hash($data['acc_password'], PASSWORD_DEFAULT),
+										'name' => $name,
+										'food' => $food,
 										'created_at' => '',
-										'updated_at' => '',
+										'created_by' => $userId
 							];
 
-
-						$send = $this->User->insert($fields);
+						$send = $this->Menu->insert($fields);
 							if($send):
 
 								$result['status'] = "success";
-								$result['msg']  =   'New User has been added successfully';
+								$result['msg']  =   'New Menu has been added successfully';
 
 							else:
 
 								$result['status'] = "Menu";
-								$result['msg'] = "Error: User was not added. Please try again later";
+								$result['msg'] = "Error: Menu was not added. Please try again later";
 							endif;
-else:
-				  			$result['status'] = "error";
-								$result['msg'] = "Error: This username may already exist. Please try again with a different one";
-				 endif;
   echo json_encode($result);
 
 
@@ -145,15 +154,15 @@ $role = implode(",", $roleArray);
 		  $ary = [];
 	 			$params = [  'conditions'=> ['id <> ? '], 'bind' => [$id] ];
 
-	  $UserList  = $this->User->find($params);
-			$User = $this->User->findById((int)$id);
+	  $MenuList  = $this->Menu->find($params);
+			$Menu = $this->Menu->findById((int)$id);
 
-			foreach ($UserList as $key => $value) {
+			foreach ($MenuList as $key => $value) {
 					$ary[] = $value->username;
 			}
 
 	//if the name exist, check the id. if the id is mine continue, ellse, the user exist
-		if($User->fullname != $fullname || $User->username != $username || $User->role != $role || $User->position != $position):
+		if($Menu->fullname != $fullname || $Menu->username != $username || $Menu->role != $role || $Menu->position != $position):
 
 
 				if(!in_array( $username, $ary)):
@@ -165,16 +174,16 @@ $role = implode(",", $roleArray);
 									 	'updated_at' => '',
 							];
 
-						$send = $this->User->update($fields, (int)$id);
+						$send = $this->Menu->update($fields, (int)$id);
 							if($send):
 
 								$result['status'] = "success";
-								$result['msg']  =   'User\'s record has been updated successfully';
+								$result['msg']  =   'Menu\'s record has been updated successfully';
 
 							else:
 
 								$result['status'] = "error";
-								$result['msg'] = "Error: User\'s record was not updated. Please try again later";
+								$result['msg'] = "Error: Menu\'s record was not updated. Please try again later";
 							endif;
 				else:
 				  			$result['status'] = "error";
@@ -192,7 +201,7 @@ $role = implode(",", $roleArray);
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return User
+     * @return Menu
      *
      */
     public function destroy()
@@ -207,16 +216,16 @@ $role = implode(",", $roleArray);
 									 	'updated_at' => '',
 							];
 
-				$send = $this->User->update($fields, (int)$id);
+				$send = $this->Menu->update($fields, (int)$id);
 							if($send):
 
 								$result['status'] = "success";
-								$result['msg']  =   'User\'s record has been deleted successfully';
+								$result['msg']  =   'Menu\'s record has been deleted successfully';
 
 							else:
 
 								$result['status'] = "Menu";
-								$result['msg'] = "Error: User\'s record was not deleted. Please try again later";
+								$result['msg'] = "Error: Menu\'s record was not deleted. Please try again later";
 							endif;
 
   echo json_encode($result);

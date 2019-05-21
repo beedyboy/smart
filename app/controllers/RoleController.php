@@ -114,7 +114,7 @@ public function store()
 							$data['msg']  =   'New Role has been added successfully';
    
 				  		else:
-				  		$data['status'] = "db_error";
+				  		$data['status'] = "Menu";
 							$data['msg'] = "Error: Role was not added. Please try again later";
 				 			
 
@@ -428,7 +428,7 @@ public function update()
 		   			}
 		   			else
 		   			{
-		   				$data['status'] = "db_error";
+		   				$data['status'] = "Menu";
 		   				$data['msg'] = "Error: Role was not saved. Please try again later";
 		   			}
 		   		}

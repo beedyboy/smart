@@ -18,6 +18,10 @@ function trim_value(&$value)
 {
     $value = trim($value);
 }
+function tax($total=0,$rate){
+ $formulae= $total-($total * $rate);
+ return $formulae;
+}
 function sanitize($dirty)
 {
 	return htmlentities($dirty, ENT_QUOTES, 'UTF-8');

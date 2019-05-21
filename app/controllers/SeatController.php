@@ -119,7 +119,7 @@ $params = [	 'conditions'=> ['shopId = ?', 'name = ?', 'tid = ?'], 'bind' => [$d
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Seat was not added. Please try again later";
 							endif;
 	else:
@@ -160,7 +160,7 @@ public function update(){
 
 			else:
 
-				$result['status'] = "db_error";
+				$result['status'] = "Menu";
 				$result['msg'] = "Error: Seat was not updated. Please try again later";
 			endif;
 		}

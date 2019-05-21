@@ -57,7 +57,7 @@ $params = [	 'conditions'=> ['shopId = ?', 'name = ?'], 'bind' => [$data['shopId
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Hall was not added. Please try again later";
 							endif;
 	else:
@@ -113,7 +113,7 @@ $ary = [];
 
 											else:
 
-												$result['status'] = "db_error";
+												$result['status'] = "Menu";
 												$result['msg'] = "Error: Hall was not updated. Please try again later";
 											endif;
 									else:

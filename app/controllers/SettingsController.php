@@ -83,7 +83,7 @@ public function update()
 		   			}
 		   			else
 		   			{
-		   				$result['status'] = "db_error";
+		   				$result['status'] = "Menu";
 		   				$result['msg'] = "Error: Settings was not saved. Please try again later";
 		   			}
 

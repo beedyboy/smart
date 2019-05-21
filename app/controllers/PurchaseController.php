@@ -102,7 +102,7 @@ $params = [	 'conditions'=> ['shopId = ?', 'item_name = ?', 'supplierId = ?'], '
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Item was not added. Please try again later";
 							endif;
 		 else:
@@ -164,7 +164,7 @@ public function update(){
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Item was not updated. Please try again later";
 							endif;
 							}

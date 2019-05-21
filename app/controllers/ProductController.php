@@ -15,6 +15,23 @@ class ProductController extends Controller
 
 	}
 
+public function list()
+{
+	$data = [];
+	$out = array('error' => false);
+
+		$shopId= $_GET['shopId'];
+
+		$params  = ['conditions'=> ['shopId = ?'], 'bind' => [$shopId] ];
+
+  	$out['data'] =  $this->Product->find($params); 
+
+	   echo json_encode($out);
+
+  	die();
+
+}
+
 
 
 
@@ -86,7 +103,7 @@ $params = [	 'conditions'=> ['shopId = ?', 'product_name = ?', 'kitchen = ?'], '
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Product was not added. Please try again later";
 							endif;
 		 else:
@@ -164,7 +181,7 @@ public function update(){
 								$result['status'] = "error";
 								$result['msg'] = "Error: Product was not updated. Please try again later";
 							endif;
-				 
+
 							}
 							else{
 									$result['status'] = "same";

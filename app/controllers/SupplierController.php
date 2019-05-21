@@ -58,7 +58,7 @@ public function save(){
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Supplier was not added. Please try again later";
 							endif;
 
@@ -100,7 +100,7 @@ public function update(){
 
 			else:
 
-				$result['status'] = "db_error";
+				$result['status'] = "Menu";
 				$result['msg'] = "Error: Supplier was not updated. Please try again later";
 			endif;
 		}

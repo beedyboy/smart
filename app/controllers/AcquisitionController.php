@@ -108,7 +108,7 @@ if($qty <= $item_quantity) {
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Item was not allocated. Please try again later";
 							endif;
 		 else:
@@ -185,7 +185,7 @@ $updQty =  (int)($qty) - (int)($Allocation->qty); // this means 5 - 2
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Item allocation was not updated. Please try again later";
 							endif;
 							}
@@ -250,7 +250,7 @@ public function updateFinishedProduct(){
 
 							else:
 
-								$result['status'] = "db_error";
+								$result['status'] = "Menu";
 								$result['msg'] = "Error: Finished product was not processed. Please try again later";
 							endif;
 
