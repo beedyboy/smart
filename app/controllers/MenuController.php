@@ -129,52 +129,41 @@ public function update(){
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 
-$sales = (empty($data['sales'])) ? [] : $data['sales'];
-$user = (empty($data['user'])) ? [] :$data['user'] ;
-$menu = (empty($data['menu'])) ? [] : $data['menu'];
-$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
-$hall = (empty($data['hall'])) ? [] : $data['hall'];
-$seat = (empty($data['seat'])) ? [] : $data['seat'];
-
-$table = (empty($data['table'])) ? [] : $data['table'];
-$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
-$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
-$username = $data['username'];
-$fullname = $data['fullname'];
-$position = $data['position'];
 $id = $data['id'];
+ $result = array();
+	$data = json_decode(file_get_contents("php://input"), TRUE);
 
+	  $token = $data['token'];
 
-$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
+	$User = new User('users');
+		$Product = new Product('products');
+$Query  = $User->findByToken($token);
 
-$role = implode(",", $roleArray);
+	if($Query):
+	$userId = $Query->id;
 
+	endif;
+$food = (empty($data['food'])) ? [] : $data['food'];
 
-							///search for all users with this new name
-		  $ary = [];
-	 			$params = [  'conditions'=> ['id <> ? '], 'bind' => [$id] ];
+$name= "";
+	foreach($data['food'] as $key=>$item):
+								$name.=$Product->findById((int)$item)->product_name.' with ';
 
-	  $MenuList  = $this->Menu->find($params);
-			$Menu = $this->Menu->findById((int)$id);
+ endforeach;
 
-			foreach ($MenuList as $key => $value) {
-					$ary[] = $value->username;
-			}
+array_walk($food, 'trim_value');
+$name = rtrim($name,' with');
+$food = implode(",", $food);
 
-	//if the name exist, check the id. if the id is mine continue, ellse, the user exist
-		if($Menu->fullname != $fullname || $Menu->username != $username || $Menu->role != $role || $Menu->position != $position):
-
-
-				if(!in_array( $username, $ary)):
-					$fields = [
-										'fullname' => $fullname,
-										'username' => $username,
-										'role' => $role,
-										'position' => $position,
-									 	'updated_at' => '',
+			$fields = [
+										'shopId' => $data['shopId'],
+										'name' => $name,
+										'food' => $food,
+										'updated_at' => '',
+										'updated_by' => $userId
 							];
 
-						$send = $this->Menu->update($fields, (int)$id);
+							$send = $this->Menu->update($fields, (int)$id);
 							if($send):
 
 								$result['status'] = "success";
@@ -185,13 +174,44 @@ $role = implode(",", $roleArray);
 								$result['status'] = "error";
 								$result['msg'] = "Error: Menu\'s record was not updated. Please try again later";
 							endif;
-				else:
-				  			$result['status'] = "error";
-								$result['msg'] = "Error: This username may already exist. Please try again with a different one";
-				 endif;
-				endif;
-
   echo json_encode($result);
+
+
+//$role = implode(",", $roleArray);
+//
+//
+//							///search for all users with this new name
+//		  $ary = [];
+//	 			$params = [  'conditions'=> ['id <> ? '], 'bind' => [$id] ];
+//
+//	  $MenuList  = $this->Menu->find($params);
+//			$Menu = $this->Menu->findById((int)$id);
+//
+//			foreach ($MenuList as $key => $value) {
+//					$ary[] = $value->username;
+//			}
+//
+//	//if the name exist, check the id. if the id is mine continue, ellse, the user exist
+//		if($Menu->fullname != $fullname || $Menu->username != $username || $Menu->role != $role || $Menu->position != $position):
+//
+//
+//				if(!in_array( $username, $ary)):
+//					$fields = [
+//										'fullname' => $fullname,
+//										'username' => $username,
+//										'role' => $role,
+//										'position' => $position,
+//									 	'updated_at' => '',
+//							];
+//
+//
+//				else:
+//				  			$result['status'] = "error";
+//								$result['msg'] = "Error: This username may already exist. Please try again with a different one";
+//				 endif;
+//				endif;
+//
+//  echo json_encode($result);
 
 
 }

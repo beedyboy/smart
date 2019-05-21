@@ -43,7 +43,7 @@ define('DB_HOST', '127.0.0.1'); //database host ***use IP address to avoid DNS l
 | of this setting
 |
 */
-define('APP_NAME', 'CMT');
+define('APP_NAME', 'SMART RESTAURANT');
 define('DEFAULT_CONTROLLER', 'HomeController');
 define('DEFAULT_CONTROLLER_METHOD', 'index');
 //contoller name is restricted
@@ -56,8 +56,8 @@ define('SITE_TITLE', 'SMART RESTAURANT'); //this will be used if no title is set
 
 //export const serverUrl = 'http://192.168.43.215/project/php/smart/'
 define('base_url', '/smart/');
-//define('origin', 'http://192.168.0.5');
-define('origin', 'http://localhost:3000');
+define('origin', 'http://192.168.0.5');
+//define('origin', 'http://localhost:3000');
 /*
 |--------------------------------------------------------------------------
 | Display Debug backtrace

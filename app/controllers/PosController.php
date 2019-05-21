@@ -76,6 +76,10 @@ $i = 1;
 	 'qty'=>$Order->qty,
 		'price'=>$Order->price,
 		'discount'=>$Order->discount,
+		'vat'=>$Order->vat,
+		'fund'=>$Order->fund,
+		'nhil'=>$Order->nhil,
+		'nfund'=> $Order->fund+$Order->nhil,
 		'total'=>$Order->total,
 		'created_at'=>$Order->created_at,
 		'updated_at'=>$Order->updated_at
@@ -168,8 +172,8 @@ $Beedy = new Beedy();
  			foreach($compute as $product_id):
 
 				 $name  = $Product->findById((int)$product_id)->product_name;
-			$price  =  $Beedy->productDetails($product_id, "price");
-   $pQty  =  $Beedy->productDetails($product_id, "qty");
+			$price  =  $Beedy->productDetails((int)$product_id, "price");
+   $pQty  =  $Beedy->productDetails((int)$product_id, "qty");
 
 			$add = $price * $qty;
 			$totalProductPrice +=$add;
@@ -185,15 +189,38 @@ $Beedy = new Beedy();
 
 			endforeach;
 
+
 							if($exist == 'false'):
 
 	//create
+
+	//cal nhil
+$nhilper = 	tax($totalProductPrice,0.024);
+$fundper = 	tax($nhilper,0.024);
+$vatper = 	tax($fundper,0.11);
+
+	//calculate now
+	$nhil = number_format(round(taxItem($totalProductPrice,0.024),2),2);
+	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
+	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
+
+
+	$nhilfund= $nhil + $fund;
+	//calc vat
+
+	//$vat = round($vatper,2);
+
+	$afterTax = round($totalProductPrice - ($vat + $nhilfund),2);
 								$fields = [
 																		'menu_id' => $menuId,
 																		'qty' => $qty,
 																		'invoice' => $invoice,
 																		'price' => $totalProductPrice,//incase of discount, use this valu for total calc
-																		'total' => $totalProductPrice,
+																		'total' => $afterTax,
+																	//	'total' => $totalProductPrice,
+																		'nhil' => $nhil,
+																		'fund' => $fund,
+																		'vat' => $vat,
 																		'shopId' => $shopId,
 																		'created_at' => '',
 															];
@@ -224,11 +251,29 @@ $Beedy = new Beedy();
 
 						endforeach;
 //dnd($orders);
+$nhilper = 	tax($newTotal,0.024);
+$fundper = 	tax($nhilper,0.024);
+$vatper = 	tax($fundper,0.11);
+
+	//calculate now
+	$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
+	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
+	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
+	$nhilfund= $nhil + $fund;
+	//calc vat
+
+	//$vat = round($vatper,2);
+
+	$afterTax = round($newTotal - ($vat + $nhilfund),2);
 
 									$fields = [
 																					'qty' => $newQty,
 																					'price' => $totalProductPrice,//incase of discount, use this valu for total calc
-																					'total' => $newTotal,
+																					'total' => $afterTax,
+																	//	'total' => $totalProductPrice,
+																					'nhil' => $nhil,
+																					'fund' => $fund,
+																					'vat' => $vat,
 																					'updated_at' => '',
 																		];
 											//send menu
@@ -330,6 +375,10 @@ $data  = [];
 			'ord_type'=>$DATA->ord_type,
 				'kitchen'=>$DATA->kitchen,
 				'vat'=>$DATA->vat,
+				'fund'=>$DATA->fund,
+				'nhil'=>$DATA->nhil,
+				'nfund'=> ($DATA->fund + $DATA->nhil),
+				'gtotal'=> ($DATA->fund + $DATA->nhil+ $DATA->vat+ $DATA->amount),
 			'waiter'=>	$User->findById($DATA->waiter)->fullname,
 			'cashier'=>	$User->findById($DATA->cashier)->fullname,
 				'created_at'=>$DATA->created_at,
@@ -372,33 +421,24 @@ $date = date("Y-m-d");
 	$Sale = new Sale('sales');
 	$amount = 0;
 	$discount = 0;
+	$nhil = 0;
+	$fund = 0;
+	$vat = 0;
 $ary = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice]  ];
 
 $Query = $Orderdetail->find($ary);
 //foreach value
 foreach($Query as $Details):
-$amount += $Details->total;
-$discount += $Details->discount;
-
+			$amount += $Details->total;
+			$discount += $Details->discount;
+			$nhil +=$Details->nhil;
+			$fund +=$Details->fund;
+			$vat +=$Details->vat;
 
 endforeach;
 	$balance = 	$amount;
 
 
-	//cal nhil
-$nhilper = 	tax($amount,0.024);
-$fundper = 	tax(round($nhilper,2),0.024);
-$vatper = 	tax(round($fundper,2),0.11);
-
-
-
-	//calculate now
-	$nhil = round($nhilper,2);
-	$fund = round($fundper,2);
- 
-	//calc vat
-
-	$vat = round($vatper,2);
 
 	$kitchen_status = "Pending";
 	if($kitchen ==="Bar"):
@@ -648,12 +688,12 @@ $del  = $Orderdetail->bulkDelete($params);
 		$Product = new Product('products');
 $Beedy = new Beedy();
 
+				$data  = $Orderdetail->findById($id);
 			//get food under menu
-			$Find = $Menu->findById($id);
+			$Find = $Menu->findById($data->menu_id);
 			$food = $Find->food;
 
 			$compute = explode(',',$food);
-				$data  = $Orderdetail->findById($id);
 
 						$qty = $data->qty;
 						$Beedy->plusProduct($compute, $qty);
@@ -747,10 +787,27 @@ foreach($compute as $product_id):
 
 							$newTotal = $price * $newQty;
 
+$nhilper = 	tax($newTotal,0.024);
+$fundper = 	tax($nhilper,0.024);
+$vatper = 	tax($fundper,0.11);
+
+	//calculate now
+	$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
+	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
+	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
+	$nhilfund= $nhil + $fund;
+	//calc vat
+
+	//$vat = round($vatper,2);
+
+	$afterTax =round($newTotal - ($vat + $nhilfund),2);
 												$fields = [
 																								'qty' => $newQty,
 																								'price' => $price,//incase of discount, use this valu for total calc
-																								'total' => $newTotal,
+																								'total' => $afterTax,
+																								'nhil' => $nhil,
+																								'fund' => $fund,
+																								'vat' => $vat,
 																								'updated_at' => '',
 																					];
 														//send menu
@@ -780,10 +837,27 @@ foreach($compute as $product_id):
 
 							$newTotal = $price * $newQty;
 
+$nhilper = 	tax($newTotal,0.024);
+$fundper = 	tax($nhilper,0.024);
+$vatper = 	tax($fundper,0.11);
+
+	//calculate now
+	$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
+	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
+	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
+	$nhilfund= $nhil + $fund;
+	//calc vat
+
+	//$vat = round($vatper,2);
+
+	$afterTax =round( $newTotal - ($vat + $nhilfund),2);
 												$fields = [
 																								'qty' => $newQty,
 																								'price' => $price,//incase of discount, use this valu for total calc
-																								'total' => $newTotal,
+																								'total' => $afterTax,
+																								'nhil' => $nhil,
+																					'fund' => $fund,
+																					'vat' => $vat,
 																								'updated_at' => '',
 																					];
 														//send menu

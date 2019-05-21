@@ -91,35 +91,27 @@ return	true;
 
 
 public function plusProduct($compute, $qty){
-
+//dnd($compute);
 			$Product = new Product('products');
 $Menu = new Menu('menus');
-			if(is_array($compute)){
+foreach($compute as $product_id):
 
-					foreach($compute as $product_id):
-						$pQty = $Product->findById((int)$product_id)->qty;
+				 //$Product->findById((int)$item)->product_name;
+			  $pQty = $Product->findById((int)$product_id)->qty;
 
-					$updQty =  $pQty + $qty; // this means 5 + 2
+			$updQty =  $pQty + $qty; // this means 5 - 2
 
-										$fields = [ 'qty' => $updQty ];
+if($updQty >= 0) {
 
-									$send = $Product->update($fields, (int)$product_id);
+									$fields = [ 'qty' => $updQty ];
 
-					//productDetails
-								endforeach;
-			}
-			else {
-					$pQty = $Product->findById((int)$compute)->qty;
+								$send = $Product->update($fields, (int)$product_id);
 
-					$updQty =  $pQty + $qty; // this means 5 + 2
+							}
 
-										$fields = [ 'qty' => $updQty ];
 
-									$send = $Product->update($fields, (int)$compute);
-
-									echo $compute;
-			}
-
+//productDetails
+			endforeach;
 
 return	true;
 
