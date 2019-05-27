@@ -76,16 +76,16 @@ if($total < 3)
 						$send = $this->Shop->insert($fields);
 							if($send):
 
-$role = "addSales,editSales,delSales, addUser,editUser,delUser,addMenu,editMenu,delMenu,
-editSupplier,addSupplier,delSupplier,addHall,editHall,delHall, addSeat,editSeat,delSeat,
-addTable,editTable,delTable,addPurchases,editPurchases,delPurchases,addFinished,
-editAllocation,addToKitchen";
- $role=preg_replace('#\s+#','',trim($role));
+//$role = "addSales,editSales,delSales, addUser,editUser,delUser,addMenu,editMenu,delMenu,
+//editSupplier,addSupplier,delSupplier,addHall,editHall,delHall, addSeat,editSeat,delSeat,
+//addTable,editTable,delTable,addPurchases,editPurchases,delPurchases,addFinished,
+//editAllocation,addToKitchen";
+// $role=preg_replace('#\s+#','',trim($role));
 					$fields2 = [
 										'fullname' => $data['fullname'],
 										'shopId' => $this->Shop->lastId(),
 										'username' => $data['username'],
-										'role' => $role,
+										//'role' => $role,
 										'position' => 'Super Admin',
 										'acc_password' => password_hash($data['acc_password'], PASSWORD_DEFAULT),
 										'created_at' => '',

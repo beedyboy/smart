@@ -42,10 +42,10 @@ $params = [	 'conditions'=> ['shopId = ?', 'menu_id = ?', 'invoice = ?'],
 	endif;
 
 }
-public function productDetails($product_id, $field)
+public function menuDetails($menu_id, $field)
 {
-			$Product= new Product('products');
- return $Product->findById($product_id)->$field;
+			$Menu= new Menu('menus');
+ return $Menu->findById($menu_id)->$field;
 
 }
 

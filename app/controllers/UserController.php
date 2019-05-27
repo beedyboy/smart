@@ -43,21 +43,21 @@ public function save(){
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 
-$sales = (empty($data['sales'])) ? [] : $data['sales'];
-$user = (empty($data['user'])) ? [] :$data['user'] ;
-$menu = (empty($data['menu'])) ? [] : $data['menu'];
-$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
-$hall = (empty($data['hall'])) ? [] : $data['hall'];
-$seat = (empty($data['seat'])) ? [] : $data['seat'];
-
-$table = (empty($data['table'])) ? [] : $data['table'];
-$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
-$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
-
-
-$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
-
-array_walk($roleArray, 'trim_value');
+//$sales = (empty($data['sales'])) ? [] : $data['sales'];
+//$user = (empty($data['user'])) ? [] :$data['user'] ;
+//$menu = (empty($data['menu'])) ? [] : $data['menu'];
+//$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
+//$hall = (empty($data['hall'])) ? [] : $data['hall'];
+//$seat = (empty($data['seat'])) ? [] : $data['seat'];
+//
+//$table = (empty($data['table'])) ? [] : $data['table'];
+//$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
+//$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
+//
+//
+//$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
+//
+//array_walk($roleArray, 'trim_value');
 
 
 $ary = [];
@@ -69,7 +69,7 @@ $ary = [];
 			}
 				if(!in_array( $data['username'], $ary)):
 
-$role = implode(",", $roleArray);
+//$role = implode(",", $roleArray);
 
 			$fields = [
 
@@ -77,7 +77,8 @@ $role = implode(",", $roleArray);
 										'shopId' => $data['shopId'],
 										'acc_email' => Input::get('acc_email'),
 										'username' => $data['username'],
-										'role' => $role,
+										//'role' => $role,
+										'date_joined'=>$data['date_joined'],
 										'position' => $data['position'],
 										'acc_password' => password_hash($data['acc_password'], PASSWORD_DEFAULT),
 										'created_at' => '',
@@ -119,26 +120,27 @@ public function update(){
 
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
-
-$sales = (empty($data['sales'])) ? [] : $data['sales'];
-$user = (empty($data['user'])) ? [] :$data['user'] ;
-$menu = (empty($data['menu'])) ? [] : $data['menu'];
-$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
-$hall = (empty($data['hall'])) ? [] : $data['hall'];
-$seat = (empty($data['seat'])) ? [] : $data['seat'];
-
-$table = (empty($data['table'])) ? [] : $data['table'];
-$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
-$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
+//
+//$sales = (empty($data['sales'])) ? [] : $data['sales'];
+//$user = (empty($data['user'])) ? [] :$data['user'] ;
+//$menu = (empty($data['menu'])) ? [] : $data['menu'];
+//$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
+//$hall = (empty($data['hall'])) ? [] : $data['hall'];
+//$seat = (empty($data['seat'])) ? [] : $data['seat'];
+//
+//$table = (empty($data['table'])) ? [] : $data['table'];
+//$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
+//$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
 $username = $data['username'];
 $fullname = $data['fullname'];
 $position = $data['position'];
+$date_joined = $data['date_joined'];
 $id = $data['id'];
 
 
-$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
-
-$role = implode(",", $roleArray);
+//$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
+//
+//$role = implode(",", $roleArray);
 
 
 							///search for all users with this new name
@@ -153,14 +155,15 @@ $role = implode(",", $roleArray);
 			}
 
 	//if the name exist, check the id. if the id is mine continue, ellse, the user exist
-		if($User->fullname != $fullname || $User->username != $username || $User->role != $role || $User->position != $position):
+		if($User->fullname != $fullname || $User->username != $username || $User->date_joined != $date_joined || $User->position != $position):
 
 
 				if(!in_array( $username, $ary)):
 					$fields = [
 										'fullname' => $fullname,
 										'username' => $username,
-										'role' => $role,
+										//'role' => $role,
+										'date_joined'=>$date_joined,
 										'position' => $position,
 									 	'updated_at' => '',
 							];

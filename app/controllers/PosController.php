@@ -36,16 +36,16 @@ class PosController extends Controller
 
  public function fetchMenu()
 {
-	$Product = new Menu('menus');
+	$Menu = new Menu('menus');
 
 	$data = [];
 	$out = array('error' => false);
 		$shopId= $_GET['shopId'];
 		$value= $_GET['value'];
-		$params  = ['conditions'=> ['shopId = ?', 'name LIKE ?'], 'bind' => [$shopId, "%$value%"] ];
-	$Waiters = $Product->find($params);
+		$params  = ['conditions'=> ['shopId = ?', 'item LIKE ?'], 'bind' => [$shopId, "%$value%"] ];
+	$MenuList = $Menu->find($params);
 
-$out['data'] = $Waiters;
+$out['data'] = $MenuList;
 
 	   echo json_encode($out);
 
@@ -72,7 +72,7 @@ $i = 1;
 		'key'=>'key'.$i,
 		'id'=>$Order->id,
 		'menu_id'=> $Order->menu_id,
-		'menu_name'=> $Menu->findById($Order->menu_id)->name,
+		'menu_name'=> $Menu->findById($Order->menu_id)->item,
 	 'qty'=>$Order->qty,
 		'price'=>$Order->price,
 		'discount'=>$Order->discount,
@@ -155,10 +155,7 @@ $Beedy = new Beedy();
 	  $shopId = $data['shopId'];
 
 			//get food under menu
-			$Find = $Menu->findById($menuId);
-			$food = $Find->food;
 
-			$compute = explode(',',$food);
 			  $qty = 1;
 
 					//first check if menu already exists in the table for current session
@@ -166,67 +163,54 @@ $Beedy = new Beedy();
 	$exist  =  $Beedy->orderExist($shopId, $menuId, $invoice);
 
 
-	$totalProductPrice = 0;
+	$totalPrice = 0;
 	$low = false;
 	//check through each item
- 			foreach($compute as $product_id):
 
-				 $name  = $Product->findById((int)$product_id)->product_name;
-			$price  =  $Beedy->productDetails((int)$product_id, "price");
-   $pQty  =  $Beedy->productDetails((int)$product_id, "qty");
+			$price  =  $Beedy->menuDetails((int)$menuId, "price");
+   //$pQty  =  $Beedy->menuDetails((int)$menuId, "qty");
 
-			$add = $price * $qty;
-			$totalProductPrice +=$add;
-
-			//check if any of the product qty is zero or less
-			//if it is less than qty, then return false
-			if($qty > $pQty):
-	$result['status'] = "error";
-			$result['msg'] = "Error: {$name} is out of stock. please contact kitchen to update product quantity";
-		    echo json_encode($result);
-						return;
-				endif;
-
-			endforeach;
+			$totalPrice = $price * $qty;
+			//$totalPrice +=$add;
 
 
-							if($exist == 'false'):
+if($exist == 'false'):
 
 	//create
 
 	//cal nhil
-$nhilper = 	tax($totalProductPrice,0.024);
-$fundper = 	tax($nhilper,0.024);
-$vatper = 	tax($fundper,0.11);
+//$nhilper = 	tax($totalProductPrice,0.024);
+//$fundper = 	tax($nhilper,0.024);
+//$vatper = 	tax($fundper,0.11);
 
 	//calculate now
-	$nhil = number_format(round(taxItem($totalProductPrice,0.024),2),2);
-	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
-	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
+	//$nhil = number_format(round(taxItem($totalProductPrice,0.024),2),2);
+	//$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
+	//$vat =  number_format(round(taxItem($fundper,0.11),2),2);
 
 
-	$nhilfund= $nhil + $fund;
+	//$nhilfund= $nhil + $fund;
 	//calc vat
 
 	//$vat = round($vatper,2);
 
-	$afterTax = round($totalProductPrice - ($vat + $nhilfund),2);
+	//$afterTax = round($totalProductPrice - ($vat + $nhilfund),2);
 								$fields = [
 																		'menu_id' => $menuId,
 																		'qty' => $qty,
 																		'invoice' => $invoice,
-																		'price' => $totalProductPrice,//incase of discount, use this valu for total calc
-																		'total' => $afterTax,
+																		'price' => $price,//incase of discount, use this valu for total calc
+																		'total' => $totalPrice,
 																	//	'total' => $totalProductPrice,
-																		'nhil' => $nhil,
-																		'fund' => $fund,
-																		'vat' => $vat,
+																		//'nhil' => $nhil,
+																		//'fund' => $fund,
+																		//'vat' => $vat,
 																		'shopId' => $shopId,
 																		'created_at' => '',
 															];
 								//send menu
 									$send = $Orderdetail->insert($fields);
-										$send2 = $Beedy->minusProduct($compute, $qty);
+										//$send2 = $Beedy->minusProduct($compute, $qty);
 												if($send):
 
 																$result['status'] = "success";
@@ -247,38 +231,38 @@ $vatper = 	tax($fundper,0.11);
 						foreach($orders as $ord):
 									$id = $ord->id;
 									$newQty = $ord->qty + $qty;
-									$newTotal = $ord->total + $totalProductPrice;
+									$newTotal = $ord->total + $totalPrice;
 
 						endforeach;
 //dnd($orders);
-$nhilper = 	tax($newTotal,0.024);
-$fundper = 	tax($nhilper,0.024);
-$vatper = 	tax($fundper,0.11);
+//$nhilper = 	tax($newTotal,0.024);
+//$fundper = 	tax($nhilper,0.024);
+//$vatper = 	tax($fundper,0.11);
 
 	//calculate now
-	$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
-	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
-	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
-	$nhilfund= $nhil + $fund;
+	//$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
+	//$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
+	//$vat =  number_format(round(taxItem($fundper,0.11),2),2);
+	//$nhilfund= $nhil + $fund;
 	//calc vat
 
 	//$vat = round($vatper,2);
 
-	$afterTax = round($newTotal - ($vat + $nhilfund),2);
+	//$afterTax = round($newTotal - ($vat + $nhilfund),2);
 
 									$fields = [
 																					'qty' => $newQty,
-																					'price' => $totalProductPrice,//incase of discount, use this valu for total calc
-																					'total' => $afterTax,
+																					'price' => $price,//incase of discount, use this valu for total calc
+																					'total' => $newTotal,
 																	//	'total' => $totalProductPrice,
-																					'nhil' => $nhil,
-																					'fund' => $fund,
-																					'vat' => $vat,
+																					//'nhil' => $nhil,
+																					//'fund' => $fund,
+																					//'vat' => $vat,
 																					'updated_at' => '',
 																		];
 											//send menu
 												$send = $Orderdetail->update($fields, (int)$id);
-										$send2 = $Beedy->minusProduct($compute, $qty);
+										//$send2 = $Beedy->minusProduct($compute, $qty);
 												if($send):
 
 											$result['status'] = "success";
@@ -291,7 +275,7 @@ $vatper = 	tax($fundper,0.11);
  endif;
 
 
-//productDetails
+//menuDetails
 
   echo json_encode($result);
 }
@@ -402,10 +386,10 @@ $date = date("Y-m-d");
 	  $token = $data['token'];
 	  $invoice = $data['invoice'];
 	  $shopId = $data['shopId'];
-	  $kitchen = ($data['kitchen'])? $data['kitchen']: 'Local';
+	  //$kitchen = ($data['kitchen'])? $data['kitchen']: 'Local';
 	  $type = ($data['type']) ? 'Dine-In': 'Take Out';
 	  $table =($data['table'])?  $data['table']: '';
-	  $seat = ($data['seat'])?  $data['seat']: '';
+	  //$seat = ($data['seat'])?  $data['seat']: '';
 			$waiter = ($data['waiter'])?  $data['waiter']: '';
 
 	$User = new User('users');
@@ -444,7 +428,7 @@ endforeach;
 	if($kitchen ==="Bar"):
 	$kitchen_status = "Approved";
 	endif;
-//productDetails
+//menuDetails
 if($type == 'Dine-In'):
 									$fields = [
 																					'shopId' => $shopId,
@@ -452,7 +436,7 @@ if($type == 'Dine-In'):
 																					'amount' => $amount,//incase of discount, use this valu for total calc
 																					'discount' => $discount,
 																					'tid' => $table,
-																					'sid' => $seat,
+																					//'sid' => $seat,
 																					'period' => $date,
 																					'waiter' => $waiter,
 																					'balance' => $balance,
@@ -460,7 +444,7 @@ if($type == 'Dine-In'):
 																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'ord_type' => $type,
-																					'kitchen' => $kitchen,
+																					//'kitchen' => $kitchen,
 																					'kitchen_status'=>$kitchen_status,
 																					'created_at' => '',
 																					'created_by' => $userId,
@@ -470,7 +454,7 @@ if($type == 'Dine-In'):
 																					'amount' => $amount,//incase of discount, use this valu for total calc
 																					'discount' => $discount,
 																					'tid' => $table,
-																					'sid' => $seat,
+																					//'sid' => $seat,
 																					'period' => $date,
 																					'waiter' => $waiter,
 																					'balance' => $balance,
@@ -478,7 +462,7 @@ if($type == 'Dine-In'):
 																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'ord_type' => $type,
-																					'kitchen' => $kitchen,
+																					//'kitchen' => $kitchen,
 																					'kitchen_status'=>$kitchen_status,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
@@ -496,7 +480,7 @@ if($type == 'Dine-In'):
 																					'nhil'=>$nhil,
 																					'fund'=>$fund,
 																					'vat' => $vat,
-																					'kitchen' => $kitchen,
+																					//'kitchen' => $kitchen,
 																					'kitchen_status'=>$kitchen_status,
 																					'created_at' => '',
 																					'created_by' => $userId,
@@ -512,7 +496,7 @@ if($type == 'Dine-In'):
 																					'nhil'=>$nhil,
 																					'fund'=>$fund,
 																					'vat' => $vat,
-																					'kitchen' => $kitchen,
+																					//'kitchen' => $kitchen,
 																					'kitchen_status'=>$kitchen_status,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
@@ -646,18 +630,18 @@ $d = "PENDING";
 				$params = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId,  $invoice]  ];
 						$data  = $Beedy->loadTblCond2($Orderdetail,$params);
 
-						foreach($data as $dat):
-						$qty = $dat->qty;
-						$id = $dat->menu_id;
-			//get food under menu
-						$Find = $Menu->findById($id);
-						$food = $Find->food;
-
-							$compute = explode(',',$food);
-						$Beedy->plusProduct($compute, $qty);
-
-
-						endforeach;
+			//			foreach($data as $dat):
+			//			$qty = $dat->qty;
+			//			$id = $dat->menu_id;
+			////get food under menu
+			//			$Find = $Menu->findById($id);
+			//			$food = $Find->food;
+			//
+			//				//$compute = explode(',',$food);
+			//			//$Beedy->plusProduct($compute, $qty);
+			//
+			//
+			//			endforeach;
 
 $del  = $Orderdetail->bulkDelete($params);
 	if($del):
@@ -691,13 +675,13 @@ $Beedy = new Beedy();
 
 				$data  = $Orderdetail->findById($id);
 			//get food under menu
-			$Find = $Menu->findById($data->menu_id);
-			$food = $Find->food;
+			//$Find = $Menu->findById($data->menu_id);
+			//$food = $Find->food;
 
-			$compute = explode(',',$food);
-
-						$qty = $data->qty;
-						$Beedy->plusProduct($compute, $qty);
+			//$compute = explode(',',$food);
+			//
+			//			$qty = $data->qty;
+			//			$Beedy->plusProduct($compute, $qty);
 
 
 		$params = ['conditions'=> ['shopId = ?', 'id = ?'], 'bind' => [$shopId,  $id]  ];
@@ -741,31 +725,31 @@ $Menu = new Menu('menus');
 				$Beedy = new Beedy();
 				$data  = $Orderdetail->findById($id);
 
-
-				$Find = $Menu->findById($data->menu_id);
-			$food = $Find->food;
-
-			$compute = explode(',',$food);
+			//
+			//	$Find = $Menu->findById($data->menu_id);
+			//$food = $Find->food;
+			//
+			//$compute = explode(',',$food);
 $totalProductPrice=0;
-foreach($compute as $product_id):
+//foreach($compute as $product_id):
 
-				 $name  = $Product->findById((int)$product_id)->product_name;
-			$price  =  $Beedy->productDetails($product_id, "price");
-   $pQty  =  $Beedy->productDetails($product_id, "qty");
+				 //$name  = $Product->findById((int)$product_id)->product_name;
+			$price  =  $Beedy->menuDetails($menu_id, "price");
+   //$pQty  =  $Beedy->menuDetails($product_id, "qty");
 
-			$add = $price * $qty;
-			$totalProductPrice +=$add;
+			$totalProductPrice = $price * $qty;
+			//$totalProductPrice +=$add;
 
 			//check if any of the product qty is zero or less
 			//if it is less than qty, then return false
-			if($qty > $pQty):
-	$result['status'] = "error";
-			$result['msg'] = "Error: {$name} is out of stock. please contact kitchen to update product quantity";
-		    echo json_encode($result);
-						return;
-				endif;
+	//		if($qty > $pQty):
+	//$result['status'] = "error";
+	//		$result['msg'] = "Error: {$name} is out of stock. please contact kitchen to update product quantity";
+	//	    echo json_encode($result);
+	//					return;
+	//			endif;
 
-			endforeach;
+			//endforeach;
 
 
 				//check if qty changed is same
@@ -774,7 +758,7 @@ foreach($compute as $product_id):
 
 					if(empty($newQty)):
 				//take old quantity and add to product, then delete from order
-						$Beedy->plusProduct($compute, $qty);
+						//$Beedy->plusProduct($compute, $qty);
 							$clearParams = ['conditions'=> ['shopId = ?', 'id = ?'], 'bind' => [$shopId,  $id]  ];
 
 							echo	$this->clearCartItem($clearParams);
@@ -784,37 +768,24 @@ foreach($compute as $product_id):
 
 
 							$diff = $newQty - $qty;
-											if($pQty >= $diff){
+											//if($pQty >= $diff){
 
 							$newTotal = $price * $newQty;
 
-$nhilper = 	tax($newTotal,0.024);
-$fundper = 	tax($nhilper,0.024);
-$vatper = 	tax($fundper,0.11);
 
-	//calculate now
-	$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
-	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
-	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
-	$nhilfund= $nhil + $fund;
-	//calc vat
-
-	//$vat = round($vatper,2);
-
-	$afterTax =round($newTotal - ($vat + $nhilfund),2);
 												$fields = [
 																								'qty' => $newQty,
 																								'price' => $price,//incase of discount, use this valu for total calc
-																								'total' => $afterTax,
-																								'nhil' => $nhil,
-																								'fund' => $fund,
-																								'vat' => $vat,
+																								'total' => $newTotal,
+																								//'nhil' => $nhil,
+																								//'fund' => $fund,
+																								//'vat' => $vat,
 																								'updated_at' => '',
 																					];
 														//send menu
 															$send = $Orderdetail->update($fields, (int)$id);
-													$send2 = $Beedy->minusProduct($compute, $diff);
-															if($send2):
+													//$send2 = $Beedy->minusProduct($compute, $diff);
+															if($send):
 
 														$result['status'] = "success";
 														$result['msg']  =   'Quantity updated successfully';
@@ -823,12 +794,12 @@ $vatper = 	tax($fundper,0.11);
 											$result['status'] = "Menu";
 											$result['msg'] = "Error: Quantity  was not updated. Please try again later";
 										endif;
-				}
-			else {
-				$result['status'] = "error";
-						$result['msg'] = "Error: Menu is out of stock. please contact kitchen to update product quantity";
-
-			}
+			//	}
+			//else {
+			//	$result['status'] = "error";
+			//			$result['msg'] = "Error: Menu is out of stock. please contact kitchen to update product quantity";
+			//
+			//}
 			echo json_encode($result);
 
   return;
@@ -838,32 +809,23 @@ $vatper = 	tax($fundper,0.11);
 
 							$newTotal = $price * $newQty;
 
-$nhilper = 	tax($newTotal,0.024);
-$fundper = 	tax($nhilper,0.024);
-$vatper = 	tax($fundper,0.11);
-
-	//calculate now
-	$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
-	$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
-	$vat =  number_format(round(taxItem($fundper,0.11),2),2);
-	$nhilfund= $nhil + $fund;
 	//calc vat
 
 	//$vat = round($vatper,2);
 
-	$afterTax =round( $newTotal - ($vat + $nhilfund),2);
+	//$afterTax =round( $newTotal - ($vat + $nhilfund),2);
 												$fields = [
 																								'qty' => $newQty,
 																								'price' => $price,//incase of discount, use this valu for total calc
-																								'total' => $afterTax,
-																								'nhil' => $nhil,
-																					'fund' => $fund,
-																					'vat' => $vat,
+																								'total' => $newTotal,
+																					//			'nhil' => $nhil,
+																					//'fund' => $fund,
+																					//'vat' => $vat,
 																								'updated_at' => '',
 																					];
 														//send menu
 															$send = $Orderdetail->update($fields, (int)$id);
-															$Beedy->plusProduct($compute, $diff);
+															//$Beedy->plusProduct($compute, $diff);
 														if($send):
 
 														$result['status'] = "success";
