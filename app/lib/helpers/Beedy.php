@@ -198,9 +198,9 @@ $status = "Active";
 public function totalProduct($shopId)
 {
 
-$Product = new Product('products');
+$Menu = new Menu('menus');
 $ary = [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
- 		$qUser = $Product->find($ary);
+ 		$qUser = $Menu->find($ary);
  return count( $qUser);
 }
 public function totalSupplier($shopId)

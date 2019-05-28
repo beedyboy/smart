@@ -18,12 +18,13 @@ function trim_value(&$value)
 {
     $value = trim($value);
 }
-function tax($total=0,$rate){
- $formulae= $total-($total * $rate);
+function tax($total,$percent,$rate){
+
+ $formulae= round(($percent/$rate)*($total),2);
  return $formulae;
 }
-function taxItem($total=0,$rate){
- return $total * $rate;
+function taxItem($total,$new){
+ return ($total - $new);
 }
 function sanitize($dirty)
 {

@@ -148,7 +148,7 @@ public function save(){
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 $Menu = new Menu('menus');
 	$Orderdetail = new Orderdetail('orderdetails');
-		$Product = new Product('products');
+		//$Product = new Product('products');
 $Beedy = new Beedy();
 	  $invoice = $data['invoice'];
 	  $menuId = $data['menuId'];
@@ -177,34 +177,34 @@ $Beedy = new Beedy();
 if($exist == 'false'):
 
 	//create
-
 	//cal nhil
-//$nhilper = 	tax($totalProductPrice,0.024);
-//$fundper = 	tax($nhilper,0.024);
-//$vatper = 	tax($fundper,0.11);
+$nhil =	tax($totalPrice,2.5,102.5);
+$nhilper =taxItem($totalPrice,$nhil); //deduction//new total
+
+
+$fund =tax($nhilper,2.5,102.5);
+$fundper =taxItem($nhilper,$fund);
+
+
+$vat =tax($fundper,12.5,112.5);
+$afterTax =taxItem($fundper,$vat);
+
 
 	//calculate now
-	//$nhil = number_format(round(taxItem($totalProductPrice,0.024),2),2);
+	// number_format(round(taxItem($totalProductPrice,0.024),2),2);
 	//$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
 	//$vat =  number_format(round(taxItem($fundper,0.11),2),2);
 
 
-	//$nhilfund= $nhil + $fund;
-	//calc vat
-
-	//$vat = round($vatper,2);
-
-	//$afterTax = round($totalProductPrice - ($vat + $nhilfund),2);
 								$fields = [
 																		'menu_id' => $menuId,
 																		'qty' => $qty,
 																		'invoice' => $invoice,
 																		'price' => $price,//incase of discount, use this valu for total calc
-																		'total' => $totalPrice,
-																	//	'total' => $totalProductPrice,
-																		//'nhil' => $nhil,
-																		//'fund' => $fund,
-																		//'vat' => $vat,
+																		'total' => $afterTax,
+																		'nhil' => $nhil,
+																		'fund' => $fund,
+																		'vat' => $vat,
 																		'shopId' => $shopId,
 																		'created_at' => '',
 															];
@@ -234,30 +234,26 @@ if($exist == 'false'):
 									$newTotal = $ord->total + $totalPrice;
 
 						endforeach;
-//dnd($orders);
-//$nhilper = 	tax($newTotal,0.024);
-//$fundper = 	tax($nhilper,0.024);
-//$vatper = 	tax($fundper,0.11);
 
-	//calculate now
-	//$nhil = number_format(round(taxItem($newTotal,0.024),2),2);
-	//$fund =  number_format(round(taxItem($nhilper,0.024),2),2);
-	//$vat =  number_format(round(taxItem($fundper,0.11),2),2);
-	//$nhilfund= $nhil + $fund;
-	//calc vat
+$nhil =	tax($newTotal,2.5,102.5);
+$nhilper =taxItem($newTotal,$nhil); //deduction//new total
 
-	//$vat = round($vatper,2);
 
-	//$afterTax = round($newTotal - ($vat + $nhilfund),2);
+$fund =tax($nhilper,2.5,102.5);
+$fundper =taxItem($nhilper,$fund);
+
+
+$vat =tax($fundper,12.5,112.5);
+$afterTax =taxItem($fundper,$vat);
+
 
 									$fields = [
 																					'qty' => $newQty,
 																					'price' => $price,//incase of discount, use this valu for total calc
-																					'total' => $newTotal,
-																	//	'total' => $totalProductPrice,
-																					//'nhil' => $nhil,
-																					//'fund' => $fund,
-																					//'vat' => $vat,
+																					'total' => $afterTax,
+																					'nhil' => $nhil,
+																					'fund' => $fund,
+																					'vat' => $vat,
 																					'updated_at' => '',
 																		];
 											//send menu
@@ -355,9 +351,9 @@ $data  = [];
 				'amount'=> $DATA->amount,
 			'balance'=>$DATA->balance,
 				'table'=> $Table->findById($DATA->tid)->name,
-				'seat'=> $Seat->findById($DATA->sid)->name,
+				//'seat'=> $Seat->findById($DATA->sid)->name,
 			'ord_type'=>$DATA->ord_type,
-				'kitchen'=>$DATA->kitchen,
+				//'kitchen'=>$DATA->kitchen,
 				'vat'=>$DATA->vat,
 				'fund'=>$DATA->fund,
 				'nhil'=>$DATA->nhil,
@@ -422,12 +418,14 @@ foreach($Query as $Details):
 endforeach;
 	$balance = 	$amount;
 
-
+//$nhil = round($nhil,2);
+//$fund = round($fund,2);
+//$vat = round($vat,2);
 
 	$kitchen_status = "Pending";
-	if($kitchen ==="Bar"):
-	$kitchen_status = "Approved";
-	endif;
+	//if($kitchen ==="Bar"):
+	//$kitchen_status = "Approved";
+	//endif;
 //menuDetails
 if($type == 'Dine-In'):
 									$fields = [
@@ -480,7 +478,6 @@ if($type == 'Dine-In'):
 																					'nhil'=>$nhil,
 																					'fund'=>$fund,
 																					'vat' => $vat,
-																					//'kitchen' => $kitchen,
 																					'kitchen_status'=>$kitchen_status,
 																					'created_at' => '',
 																					'created_by' => $userId,
@@ -496,7 +493,6 @@ if($type == 'Dine-In'):
 																					'nhil'=>$nhil,
 																					'fund'=>$fund,
 																					'vat' => $vat,
-																					//'kitchen' => $kitchen,
 																					'kitchen_status'=>$kitchen_status,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
@@ -510,10 +506,7 @@ if($type == 'Dine-In'):
 	if(count($exist) < 1):
 		return 	$this->saveNewOrder($fields);
 			else:
-			//foreach ($exist as $Value):
-			//$id=$Value->id;
-			//
-			//endforeach;
+
 			$id = $data['id'];
 		return	$this->saveOldOrder($fields2, $id);
 
@@ -596,9 +589,7 @@ $d = "PENDING";
 		'amount'=> $Basket->amount,
 	'balance'=>$Basket->balance,
 		'table'=> $Table->findById($Basket->tid)->name,
-		'seat'=> $Seat->findById($Basket->sid)->name,
 	'ord_type'=>$Basket->ord_type,
-		'kitchen'=>$Basket->kitchen,
 	'waiter'=>	$User->findById($Basket->waiter)->fullname,
 	'cashier'=>	$User->findById($Basket->cashier)->fullname,
 	'gtotal'=> ($Basket->fund + $Basket->nhil+ $Basket->vat+ $Basket->amount),
@@ -630,18 +621,6 @@ $d = "PENDING";
 				$params = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId,  $invoice]  ];
 						$data  = $Beedy->loadTblCond2($Orderdetail,$params);
 
-			//			foreach($data as $dat):
-			//			$qty = $dat->qty;
-			//			$id = $dat->menu_id;
-			////get food under menu
-			//			$Find = $Menu->findById($id);
-			//			$food = $Find->food;
-			//
-			//				//$compute = explode(',',$food);
-			//			//$Beedy->plusProduct($compute, $qty);
-			//
-			//
-			//			endforeach;
 
 $del  = $Orderdetail->bulkDelete($params);
 	if($del):
@@ -670,18 +649,9 @@ $del  = $Orderdetail->bulkDelete($params);
 				$shopId=$_GET['shopId'] ;
 				$Menu = new Menu('menus');
 	$Orderdetail = new Orderdetail('orderdetails');
-		$Product = new Product('products');
 $Beedy = new Beedy();
 
 				$data  = $Orderdetail->findById($id);
-			//get food under menu
-			//$Find = $Menu->findById($data->menu_id);
-			//$food = $Find->food;
-
-			//$compute = explode(',',$food);
-			//
-			//			$qty = $data->qty;
-			//			$Beedy->plusProduct($compute, $qty);
 
 
 		$params = ['conditions'=> ['shopId = ?', 'id = ?'], 'bind' => [$shopId,  $id]  ];
@@ -725,36 +695,10 @@ $Menu = new Menu('menus');
 				$Beedy = new Beedy();
 				$data  = $Orderdetail->findById($id);
 
-			//
-			//	$Find = $Menu->findById($data->menu_id);
-			//$food = $Find->food;
-			//
-			//$compute = explode(',',$food);
+
 $totalProductPrice=0;
-//foreach($compute as $product_id):
-
-				 //$name  = $Product->findById((int)$product_id)->product_name;
 			$price  =  $Beedy->menuDetails($menu_id, "price");
-   //$pQty  =  $Beedy->menuDetails($product_id, "qty");
-
 			$totalProductPrice = $price * $qty;
-			//$totalProductPrice +=$add;
-
-			//check if any of the product qty is zero or less
-			//if it is less than qty, then return false
-	//		if($qty > $pQty):
-	//$result['status'] = "error";
-	//		$result['msg'] = "Error: {$name} is out of stock. please contact kitchen to update product quantity";
-	//	    echo json_encode($result);
-	//					return;
-	//			endif;
-
-			//endforeach;
-
-
-				//check if qty changed is same
-				//if($newQty === $qty):
-				//do nothing
 
 					if(empty($newQty)):
 				//take old quantity and add to product, then delete from order
@@ -772,14 +716,20 @@ $totalProductPrice=0;
 
 							$newTotal = $price * $newQty;
 
+$nhil =	tax($newTotal,2.5,102.5);
+$nhilper =taxItem($newTotal,$nhil); //deduction//new total
 
+$fund =tax($nhilper,2.5,102.5);
+$fundper =taxItem($nhilper,$fund);
+$vat =tax($fundper,12.5,112.5);
+$afterTax =taxItem($fundper,$vat);
 												$fields = [
 																								'qty' => $newQty,
 																								'price' => $price,//incase of discount, use this valu for total calc
-																								'total' => $newTotal,
-																								//'nhil' => $nhil,
-																								//'fund' => $fund,
-																								//'vat' => $vat,
+																								'total' => $afterTax,
+																								'nhil' => $nhil,
+																								'fund' => $fund,
+																								'vat' => $vat,
 																								'updated_at' => '',
 																					];
 														//send menu
@@ -794,12 +744,7 @@ $totalProductPrice=0;
 											$result['status'] = "Menu";
 											$result['msg'] = "Error: Quantity  was not updated. Please try again later";
 										endif;
-			//	}
-			//else {
-			//	$result['status'] = "error";
-			//			$result['msg'] = "Error: Menu is out of stock. please contact kitchen to update product quantity";
-			//
-			//}
+
 			echo json_encode($result);
 
   return;
@@ -809,18 +754,23 @@ $totalProductPrice=0;
 
 							$newTotal = $price * $newQty;
 
-	//calc vat
+	 $nhil =	tax($newTotal,2.5,102.5);
+$nhilper =taxItem($newTotal,$nhil); //deduction//new total
 
-	//$vat = round($vatper,2);
 
-	//$afterTax =round( $newTotal - ($vat + $nhilfund),2);
+$fund =tax($nhilper,2.5,102.5);
+$fundper =taxItem($nhilper,$fund);
+
+
+$vat =tax($fundper,12.5,112.5);
+$afterTax =taxItem($fundper,$vat);
 												$fields = [
 																								'qty' => $newQty,
 																								'price' => $price,//incase of discount, use this valu for total calc
-																								'total' => $newTotal,
-																					//			'nhil' => $nhil,
-																					//'fund' => $fund,
-																					//'vat' => $vat,
+																								'total' => $afterTax,
+																								'nhil' => $nhil,
+																								'fund' => $fund,
+																								'vat' => $vat,
 																								'updated_at' => '',
 																					];
 														//send menu
@@ -881,7 +831,6 @@ $del  = $Orderdetail->bulkDelete($params);
 $d = "PENDING";
 	$User = new User('users');
 	$Table = new HTable('htables');
-	$Seat = new Seat('seats');
 	$User = new User('users');
 
 		$params  = ['conditions'=> ['shopId = ? ',  'status = ? '],	'bind' => [$shopId, $d] ];
@@ -897,9 +846,7 @@ foreach($Receivables as $Receivable):
 		'amount'=> $Receivable->amount,
 	'balance'=>$Receivable->balance,
 		'table'=> $Table->findById($Receivable->tid)->name,
-		'seat'=> $Seat->findById($Receivable->sid)->name,
 	'ord_type'=>$Receivable->ord_type,
-		'kitchen'=>$Receivable->kitchen,
 		'gtotal'=> ($Receivable->fund + $Receivable->nhil+ $Receivable->vat+ $Receivable->amount),
 		'kitchen_status'=>$Receivable->kitchen_status,
 		'approved_by'=>$User->findById($Receivable->approved_by)->fullname,
@@ -1167,9 +1114,7 @@ foreach($Reports as $Report):
 		'period'=> $Report->period,
 	'balance'=>$Report->balance,
 		'table'=> $Table->findById($Report->tid)->name,
-		'seat'=> $Seat->findById($Report->sid)->name,
 	'ord_type'=>$Report->ord_type,
-		'kitchen'=>$Report->kitchen,
 	'waiter'=>	$User->findById($Report->waiter)->fullname,
 	'cashier'=>	$User->findById($Report->cashier)->fullname,
 		'created_at'=>$Report->created_at,
@@ -1226,9 +1171,7 @@ foreach($Reports as $Report):
 		'period'=> $Report->period,
 	'balance'=>$Report->balance,
 		'table'=> $Table->findById($Report->tid)->name,
-		'seat'=> $Seat->findById($Report->sid)->name,
 	'ord_type'=>$Report->ord_type,
-		'kitchen'=>$Report->kitchen,
 	'waiter'=>	$User->findById($Report->waiter)->fullname,
 	'cashier'=>	$User->findById($Report->cashier)->fullname,
 		'created_at'=>$Report->created_at,
@@ -1263,7 +1206,6 @@ public function departmentReport()
 	$out = array('error' =>  false);
 	$Sale = new Sale('sales');
 	$Orderdetail = new Orderdetail('orderdetails');
-	$Product = new Product('products');
 
 	  $startDate = $_GET['startDate'];
 	  $endDate = $_GET['endDate'];
