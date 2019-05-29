@@ -75,12 +75,13 @@ $i = 1;
 		'menu_name'=> $Menu->findById($Order->menu_id)->item,
 	 'qty'=>$Order->qty,
 		'price'=>$Order->price,
+		'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),
 		'discount'=>$Order->discount,
 		'vat'=>$Order->vat,
 		'fund'=>$Order->fund,
 		'nhil'=>$Order->nhil,
 		'nfund'=> $Order->fund+$Order->nhil,
-		'total'=>$Order->total,
+		//'total'=>$Order->total,
 		'created_at'=>$Order->created_at,
 		'updated_at'=>$Order->updated_at
 	);
@@ -104,6 +105,9 @@ $i = 1;
 {
 $Beedy = new Beedy();
 $productCount = 0;
+$nhil = 0;
+$fund = 0;
+$vat = 0;
 $sumTotal = 0;
 $sumDiscount = 0;
 
@@ -118,16 +122,20 @@ $sumDiscount = 0;
 
 	foreach($Orders as $Order):
 $productCount +=1;
+$nhil +=$Order->nhil;
+$fund +=$Order->fund;
+$vat +=$Order->vat;
 $sumTotal +=$Order->total;
 $sumDiscount +$Order->discount;
 
 	endforeach;
+	$final = round($nhil + $fund + $vat + $sumTotal,2);
 
 	$row = array(
 		'id'=>$Beedy->PasswordDecider(),
 		'productCount'=>$productCount,
 		'discount'=>$sumDiscount,
-		'total'=>$sumTotal
+		'total'=>$final
 	);
 
 	$data[]=$row;
@@ -226,12 +234,13 @@ $afterTax =taxItem($fundper,$vat);
 											//update
 						$orders =   $Beedy->OrderDetail($shopId, $menuId, $invoice);
 						$id = 0;
+						$j = 0;
 						$newQty = 0;
 						$newTotal=0;
 						foreach($orders as $ord):
 									$id = $ord->id;
 									$newQty = $ord->qty + $qty;
-									$newTotal = $ord->total + $totalPrice;
+									$newTotal = $ord->total +  $ord->nhil +  $ord->fund +  $ord->vat  + $totalPrice;
 
 						endforeach;
 
@@ -689,7 +698,6 @@ $del  = $Orderdetail->bulkDelete($params);
 
 
 $Menu = new Menu('menus');
-			$Product = new Product('products');
 
 				$Orderdetail = new Orderdetail('orderdetails');
 				$Beedy = new Beedy();
@@ -1095,7 +1103,7 @@ $discountA =  $A->discount;
 
 	$Beedy = new Beedy();
 	$Table = new HTable('htables');
-	$Seat = new Seat('seats');
+	//$Seat = new Seat('seats');
 	$User = new User('users');
 
 		$params  = ['conditions'=> ['shopId = ? ',  'period >= ? ',  'period <= ? '],
@@ -1109,7 +1117,7 @@ foreach($Reports as $Report):
 		'key'=>'key'.$i,
 		'id'=>$Report->id,
 		'invoice_number'=>$Report->invoice_number,
-		'amount'=> $Report->amount,
+		'amount'=> round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2),
 		'status'=> $Report->status,
 		'period'=> $Report->period,
 	'balance'=>$Report->balance,
@@ -1166,8 +1174,8 @@ foreach($Reports as $Report):
 		'key'=>'key'.$i,
 		'id'=>$Report->id,
 		'invoice_number'=>$Report->invoice_number,
-		'amount'=> $Report->amount,
-		'status'=> $Report->status,
+		'amount'=> round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2),
+ 	'status'=> $Report->status,
 		'period'=> $Report->period,
 	'balance'=>$Report->balance,
 		'table'=> $Table->findById($Report->tid)->name,
@@ -1205,6 +1213,9 @@ public function departmentReport()
 
 	$out = array('error' =>  false);
 	$Sale = new Sale('sales');
+	$Menu = new Menu('menus');
+	$Category = new Category('categories');
+	$Kitchen = new Kitchen('kitchens');
 	$Orderdetail = new Orderdetail('orderdetails');
 
 	  $startDate = $_GET['startDate'];
@@ -1213,12 +1224,14 @@ public function departmentReport()
 
 	$Beedy = new Beedy();
 	$Table = new HTable('htables');
-	$Seat = new Seat('seats');
 	$User = new User('users');
 
 
 $sales_order = array();
   $price_order = array();
+$nhil_price = array();
+  $fund_price = array();
+$vat_price = array();
 
 
 		$params  = ['conditions'=> ['shopId = ? ',  'period >= ? ',  'period <= ? '],
@@ -1241,15 +1254,21 @@ $sales_order = array();
 								foreach($Orders as $Order):
 								//while($Order = $Orders->fetch()){
 
-											if(array_key_exists(  $Order->product_id , $sales_order) ):
+											if(array_key_exists(  $Order->menu_id , $sales_order) ):
 
-															$sales_order[ $Order->product_id] += $Order->qty;
-															$price_order[  $Order->product_id] += $Order->total;
+															$sales_order[ $Order->menu_id] += $Order->qty;
+															$price_order[  $Order->menu_id] += $Order->total;
+															$nhil_price[  $Order->menu_id] += $Order->nhil;
+															$fund_price[ $Order->menu_id] += $Order->fund;
+															$vat_price[  $Order->menu_id] += $Order->vat;
 
 
 										else:
-														$sales_order[  $Order->product_id]  = $Order->qty;
-														$price_order[ $Order->product_id]  = $Order->total;
+														$sales_order[  $Order->menu_id]  = $Order->qty;
+														$price_order[ $Order->menu_id]  = $Order->total;
+														$nhil_price[  $Order->menu_id] = $Order->nhil;
+															$fund_price[ $Order->menu_id] = $Order->fund;
+															$vat_price[  $Order->menu_id] = $Order->vat;
 
 											endif;
 								//}
@@ -1263,18 +1282,18 @@ $total_amount = 0;
 
 $i= 0;
 foreach($sales_order as $key => $val){
-$p =  $Beedy->getColById($Product,   $key, 'product_name') ;
-$main =  $Beedy->getColById($Product, $key, 'kitchen');
-$left =  $Beedy->getColById($Product, $key, 'qty');
+$p =  $Beedy->getColById($Menu,   $key, 'item') ;
+$main =  $Beedy->getColById($Kitchen, $Beedy->getColById($Category, $Beedy->getColById($Menu, $key, 'catId'), 'kitchenId'), 'name') ;
+//$left =  $Beedy->getColById($Menu, $key, 'qty');
 
 	$row = array(
 		'key'=>'key'.$i,
-		'product_id'=> $Order->product_id,
-		'product_name'=> $p,
+		'menu_id'=> $Order->menu_id,
+		'menu_name'=> $p,
 	 'sold'=>$val,
-	 'left'=>$left,
 	 'kitchen'=>$main,
-		'price'=>$price_order[$key]
+		'normalPrice'=>$price_order[$key],
+		'price'=>$nhil_price[$key] + $fund_price[$key] + $vat_price[$key] + $price_order[$key]
 	);
 
 	$data[]=$row;
@@ -1318,11 +1337,11 @@ foreach($Reports as $Report):
 		'key'=>'key'.$i,
 		'id'=>$Report->id,
 		'invoice_number'=>$Report->invoice_number,
-		'amount'=> $Report->amount,
+		'amount'=> round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2),
 		'status'=> $Report->status,
 		'period'=> $Report->period,
 	'ord_type'=>$Report->ord_type,
-		'kitchen'=>$Report->kitchen
+		//'kitchen'=>$Report->kitchen
 	);
 
 	$data[]=$row;
