@@ -86,7 +86,7 @@ if($total < 3)
 										'shopId' => $this->Shop->lastId(),
 										'username' => $data['username'],
 										//'role' => $role,
-										'position' => 'Super Admin',
+										'position' => 'SuperAdmin',
 										'acc_password' => password_hash($data['acc_password'], PASSWORD_DEFAULT),
 										'created_at' => '',
 										'updated_at' => '',

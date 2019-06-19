@@ -14,6 +14,9 @@ die();
 	echo '</pre>';
 
 }
+function wrap($str, $width=5, $break="\n"){
+ return wordwrap($str, $width, $break, true);
+}
 function trim_value(&$value)
 {
     $value = trim($value);

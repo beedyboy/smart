@@ -73,121 +73,20 @@ foreach($MenuList as $Menu):
 
  public function getCartItem()
 {
-//	$data = [];
-//	$out = array('error' => false);
-//	$Orderdetail = new Orderdetail('orderdetails');
-//	$Menu = new Menu('menus');
-//		$shopId= $_GET['shopId'];
-//		$invoice= $_GET['invoice'];
-//		$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
-//
-// $Orders =  $Orderdetail->find($params);
-//$i = 1;
-//	foreach($Orders as $Order):
-//
-//	$row = array(
-//		'key'=>'key'.$i,
-//		'id'=>$Order->id,
-//		'menu_id'=> $Order->menu_id,
-//		'menu_name'=> $Menu->findById($Order->menu_id)->item,
-//	 'qty'=>$Order->qty,
-//		'price'=>$Order->price,
-//		'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),
-//		'discount'=>$Order->discount,
-//		'vat'=>$Order->vat,
-//		'fund'=>$Order->fund,
-//		'nhil'=>$Order->nhil,
-//		'nfund'=> $Order->fund+$Order->nhil,
-//		//'total'=>$Order->total,
-//		'created_at'=>$Order->created_at,
-//		'updated_at'=>$Order->updated_at
-//	);
-//
-//	$data[]=$row;
-//
-//	$i+=1;
-//
-//	endforeach;
-// 	$out['data'] = $data;
-//	   echo json_encode($out);
-//
-//  	die();
-	//$data = json_decode(file_get_contents("php://input"), TRUE);
-	  $invoice = $_GET['invoice'];
-	  $shopId = $_GET['shopId'];
-	$Orderdetail = new Orderdetail('orderdetails');
-$Beedy = new Beedy();
-			$Menu = new Menu('menus');
-
-		//DISTINCT plate//
-					$orderParams  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
-
 	$data = [];
- $Orders =  $Orderdetail->find($orderParams);
-	$uniquePlate = array_unique(array_column($Orders, 'plate'));
+	$out = array('error' => false);
+	$Orderdetail = new Orderdetail('orderdetails');
+	$Menu = new Menu('menus');
+		$shopId= $_GET['shopId'];
+		$invoice= $_GET['invoice'];
+		$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
 
-	foreach($uniquePlate as $plate):
-
-		//do for others first
-		if($plate > 1){
-
-				$amount =0;
-				$nhil =0;
-				$fund =0;
-				$vat =0;
-				$total =0;
-				$item ='';
-				//select based on plate
-		$plateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
-					$plateOrders =  $Orderdetail->find($plateParams);
-					//var_dump($plate);
-						//iterate trhough products under the plate
-						$numItems = count($plateOrders);
-						$i = 0;
-						foreach($plateOrders as $items){
-								if(++$i === $numItems) {
-										$item .=$Menu->findById($items->menu_id)->item;
-								}else{
-										$item .=$Menu->findById($items->menu_id)->item." & ";
-								}
-
-								$amount +=$Menu->findById($items->menu_id)->price;
-								$nhil += $items->nhil;
-								$fund += $items->fund;
-								$vat += $items->vat;
-								$total += $items->total;
-
-
-						}
-
-							$row = array(
-								'key'=>'key'.$plate,
-								'base'=>'Yes',
-								'id'=>$plate,
-								'menu_id'=> $plate,
-								'menu_name'=> $item,
-								'qty'=>1,
-								'price'=>$amount,
-								'total'=> $fund + $nhil+ $vat+ $total,
-								'vat'=>$vat,
-								'fund'=>$fund,
-								'nhil'=>$nhil,
-
-							);
-
-							$data[]=$row;
-
-	$i+=1;
-		}
-		else{
-			$singlePlateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
-					$singlePlateOrders =  $Orderdetail->find($singlePlateParams);
-		$i = 1;
-	foreach($singlePlateOrders as $Order):
+ $Orders =  $Orderdetail->find($params);
+$i = 1;
+	foreach($Orders as $Order):
 
 	$row = array(
 		'key'=>'key'.$i,
-		'base'=>'No',
 		'id'=>$Order->id,
 		'menu_id'=> $Order->menu_id,
 		'menu_name'=> $Menu->findById($Order->menu_id)->item,
@@ -209,123 +108,17 @@ $Beedy = new Beedy();
 	$i+=1;
 
 	endforeach;
- 	$result['data'] = $data;
+ 	$out['data'] = $data;
+	   echo json_encode($out);
 
-		}
-	$result['data'] = $data;
-	endforeach;
-	echo json_encode($result);
+  	die();
+
 }
 
 
 
 
- public function getPlate(){
-							//$data = json_decode(file_get_contents("php://input"), TRUE);
-							$invoice = $_GET['invoice'];
-							$shopId = $_GET['shopId'];
-					$Orderdetail = new Orderdetail('orderdetails');
-				$Beedy = new Beedy();
-							$Menu = new Menu('menus');
-
-						//DISTINCT plate//
-									$orderParams  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
-
-					$data = [];
-					$Orders =  $Orderdetail->find($orderParams);
-					$uniquePlate = array_unique(array_column($Orders, 'plate'));
-
-					foreach($uniquePlate as $plate):
-
-						//do for others first
-						if($plate > 1){
-
-								$amount =0;
-								$nhil =0;
-								$fund =0;
-								$vat =0;
-								$total =0;
-								$item ='';
-								//select based on plate
-						$plateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
-									$plateOrders =  $Orderdetail->find($plateParams);
-									//var_dump($plate);
-										//iterate trhough products under the plate
-										$numItems = count($plateOrders);
-										$i = 0;
-										foreach($plateOrders as $items){
-												if(++$i === $numItems) {
-														$item .=$Menu->findById($items->menu_id)->item;
-												}else{
-														$item .=$Menu->findById($items->menu_id)->item." & ";
-												}
-
-												$amount +=$Menu->findById($items->menu_id)->price;
-												$nhil += $items->nhil;
-												$fund += $items->fund;
-												$vat += $items->vat;
-												$total += $items->total;
-
-
-										}
-
-											$row = array(
-												'key'=>'key'.$plate,
-												'base'=>'Yes',
-												'id'=>$plate,
-												'menu_id'=> $plate,
-												'menu_name'=> $item,
-												'qty'=>1,
-												'price'=>$amount,
-												'total'=> $fund + $nhil+ $vat+ $total,
-												'vat'=>$vat,
-												'fund'=>$fund,
-												'nhil'=>$nhil,
-
-											);
-
-											$data[]=$row;
-
-					$i+=1;
-						}
-						else{
-							$singlePlateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
-									$singlePlateOrders =  $Orderdetail->find($singlePlateParams);
-						$i = 1;
-					foreach($singlePlateOrders as $Order):
-
-					$row = array(
-						'key'=>'key'.$i,
-						'base'=>'No',
-						'id'=>$Order->id,
-						'menu_id'=> $Order->menu_id,
-						'menu_name'=> $Menu->findById($Order->menu_id)->item,
-						'qty'=>$Order->qty,
-						'price'=>$Order->price,
-						'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),
-						'discount'=>$Order->discount,
-						'vat'=>$Order->vat,
-						'fund'=>$Order->fund,
-						'nhil'=>$Order->nhil,
-						'nfund'=> $Order->fund+$Order->nhil,
-						//'total'=>$Order->total,
-						'created_at'=>$Order->created_at,
-						'updated_at'=>$Order->updated_at
-					);
-
-					$data[]=$row;
-
-					$i+=1;
-
-					endforeach;
-						$result['data'] = $data;
-
-						}
-					$result['data'] = $data;
-					endforeach;
-					echo json_encode($result);
-	}
-	public function getCartTotal()
+ public function getCartTotal()
 {
 $Beedy = new Beedy();
 $productCount = 0;
@@ -408,18 +201,18 @@ $Beedy = new Beedy();
 
 if($exist == 'false'):
 
-										//create
-										//cal nhil
-									$nhil =	tax($totalPrice,2.5,102.5);
-									$nhilper =taxItem($totalPrice,$nhil); //deduction//new total
+	//create
+	//cal nhil
+$nhil =	tax($totalPrice,2.5,102.5);
+$nhilper =taxItem($totalPrice,$nhil); //deduction//new total
 
 
-									$fund =tax($nhilper,2.5,102.5);
-									$fundper =taxItem($nhilper,$fund);
+$fund =tax($nhilper,2.5,102.5);
+$fundper =taxItem($nhilper,$fund);
 
 
-									$vat =tax($fundper,12.5,112.5);
-									$afterTax =taxItem($fundper,$vat);
+$vat =tax($fundper,12.5,112.5);
+$afterTax =taxItem($fundper,$vat);
 
 
 	//calculate now
@@ -451,22 +244,22 @@ if($exist == 'false'):
 															else:
 
 																$result['status'] = "Menu";
-																$result['msg'] = "Error: Item was not added. Please try again later";
+																$result['msg'] = "Error: Item was not allocated. Please try again later";
 															endif;
 											else:
 											//dnd('existed');
 											//update
-													$orders =   $Beedy->OrderDetail($shopId, $menuId, $invoice);
-													$id = 0;
-													$j = 0;
-													$newQty = 0;
-													$newTotal=0;
-													foreach($orders as $ord):
-																$id = $ord->id;
-																$newQty = $ord->qty + $qty;
-																$newTotal = $ord->total +  $ord->nhil +  $ord->fund +  $ord->vat  + $totalPrice;
+						$orders =   $Beedy->OrderDetail($shopId, $menuId, $invoice);
+						$id = 0;
+						$j = 0;
+						$newQty = 0;
+						$newTotal=0;
+						foreach($orders as $ord):
+									$id = $ord->id;
+									$newQty = $ord->qty + $qty;
+									$newTotal = $ord->total +  $ord->nhil +  $ord->fund +  $ord->vat  + $totalPrice;
 
-													endforeach;
+						endforeach;
 
 $nhil =	tax($newTotal,2.5,102.5);
 $nhilper =taxItem($newTotal,$nhil); //deduction//new total
@@ -510,94 +303,6 @@ $afterTax =taxItem($fundper,$vat);
 }
 
 
-
-public function saveBase(){
-
-	 $result = array();
-	$data = json_decode(file_get_contents("php://input"), TRUE);
-	$Orderdetail = new Orderdetail('orderdetails');
-$Beedy = new Beedy();
-		$shopId= $data['shopId'];
-		$invoice= $data['invoice'];
-	   $localOrder = $data['localOrder'];
-	   $localQty = $data['localQty'];
-
-
-
- 	$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
- 	$array = $Orderdetail->find($params);
-	//is there any existing order?
-	$made =  count($array);
-	$plate = 2;
-	 if($made < 1){
-		$plate = 2;
-	 }
-	 else{
-		$plate  = $Orderdetail->max('plate') +1;
-		}
-$i = 1;
-$length = is_array($localOrder)? count($localOrder):1 ;
-
-	foreach($localOrder as $key=>$value){
-						$qty =$localQty[$key];
-						$menuId =$value;
-
-					 	$totalPrice = 0;
-
-						//check through each item
-					$price  =  $Beedy->menuDetails((int)$menuId, "price");
-					$totalPrice = $price * $qty;
-
-									//create
-									//cal nhil
-								$nhil =	tax($totalPrice,2.5,102.5);
-								$nhilper =taxItem($totalPrice,$nhil); //deduction//new total
-
-
-								$fund =tax($nhilper,2.5,102.5);
-								$fundper =taxItem($nhilper,$fund);
-
-
-								$vat =tax($fundper,12.5,112.5);
-								$afterTax =taxItem($fundper,$vat);
-
-								$fields = [
-																		'menu_id' => $menuId,
-																		'qty' => $qty,
-																		'invoice' => $invoice,
-																		'price' => $price,//incase of discount, use this valu for total calc
-																		'total' => $afterTax,
-																		'nhil' => $nhil,
-																		'fund' => $fund,
-																		'vat' => $vat,
-																		'plate' => $plate,
-																		'shopId' => $shopId,
-																		'created_at' => '',
-															];
-								//send menu
-									$send = $Orderdetail->insert($fields);
-										if($i === $length) {
-												if($send):
-
-																		$result['status'] = "success";
-																		$result['msg']  =   'Order sent successfully';
-
-																	else:
-
-																		$result['status'] = "Menu";
-																		$result['msg'] = "Error: Order not sent. Please try again later";
-																	endif;
-										}
-$i+=1;
-}
-				 echo json_encode($result);
-					//var_dump($localOrder);
-					//var_dump('Quantity');
-					//var_dump($localQty);
-
-
-//echo json_encode($result);
-}
 public function updateFinishedProduct(){
 
 	 $result = array();

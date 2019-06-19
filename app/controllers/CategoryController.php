@@ -32,6 +32,7 @@ public function list()
 				'kitchenId'=> $cat->kitchenId,
 				'kitchen_name'=> $Kitchen->findById($cat->kitchenId)->name,
 				'name'=>$cat->name,
+				'date'=>$cat->created_at,
 				'id'=>$cat->id
 	);
 

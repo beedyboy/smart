@@ -130,6 +130,13 @@ public function loadTblCond2($obj,$params)
  return $obj->find($params);
 }
 
+//public function existOne($tbl, $col, $value){
+//$conn = Database::getInstance();
+//$select = $conn->db->prepare("SELECT * FROM $tbl WHERE $col LIKE ? Limit 1");
+//$select->execute(array($value));
+//return $select->rowCount();
+//}
+
 public function getColTotalByInvoice($obj,$invoice, $field)
 {
 	$total = 0;

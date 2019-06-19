@@ -1,0 +1,1 @@
+ALTER TABLE `orderdetails` ADD `plate` TINYINT NULL DEFAULT '1' AFTER `discount`;

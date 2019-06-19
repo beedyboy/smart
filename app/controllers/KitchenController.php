@@ -44,6 +44,7 @@ public function save(){
 	  $token = $data['token'];
 	  $name = $data['name'];
 	  $shopId = $data['shopId'];
+		 $type = $data['type'];
 
 	$User = new User('users');
 
@@ -61,6 +62,7 @@ public function save(){
 
 			$fields = [
 										'name' => $name,
+										'base' => $type,
 										'shopId' => $shopId,
 										'created_by' => $userId,
 										'created_at' => '',
@@ -121,9 +123,10 @@ public function update(){
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 
-	  $token = $data['token'];
-	  $name = $data['name'];
 	  $id = $data['id'];
+	  $name = $data['name'];
+	  $token = $data['token'];
+		 $type = $data['type'];
 
 	$User = new User('users');
  $Query  = $User->findByToken($token);
@@ -136,11 +139,12 @@ public function update(){
  					$Kitchen = $this->Kitchen->findById((int)$id);
 
 
-		   		if($Kitchen->name != $name )
+		   		if($Kitchen->name != $name || $Kitchen->base != $type )
 							{
 
 								$fields = [
 										'name' => $name,
+										'base' => $type,
 										'updated_by' => $userId,
 										'updated_at' => '',
 							];

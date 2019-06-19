@@ -4,7 +4,7 @@
 	*/
 	class Model extends Pagination
 	{
-		protected $_db, $_table, $_modelName, $_softDelete = false, $_columnsNames = [];
+		protected $_db, $_table, $_modelName, $_softDelete = false, $_columnsNames = [], $_dbResult = [];
 		public $id;
 
 		public function __construct($table)
@@ -74,9 +74,20 @@ foreach ($resultQuery as $result)
 	$results[] = $obj;
 }
 endif;
+$this->_dbResult = $results;
 return $results;
 }
+public function max($column){
 
+	return max(array_column($this->_dbResult, $column));
+}
+
+public function min($column){
+
+$count = count($this->_dbResult);
+return $count > 0? min(array_column($this->_dbResult, $column)): '';
+	//return min(array_column($this->_dbResult, $column));
+}
 
 public function findFirst($params = [])
 {
