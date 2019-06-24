@@ -52,7 +52,7 @@ foreach($MenuList as $Menu):
 				'id'=>$Menu->id,
 				'price'=>$Menu->price,
 				'item'=>$Menu->item,
-				'kitchenId'=>$kitchenId ,
+				'kitchenId'=>$kitchenId,
 				'base'=> $Kitchen->findById($kitchenId)->base,
 				//'kitchen_name'=> $Kitchen->findById($cat->kitchenId)->name,
 	);
@@ -221,7 +221,6 @@ $Beedy = new Beedy();
 
 
  public function getPlate(){
-							//$data = json_decode(file_get_contents("php://input"), TRUE);
 							$invoice = $_GET['invoice'];
 							$shopId = $_GET['shopId'];
 					$Orderdetail = new Orderdetail('orderdetails');
@@ -380,7 +379,8 @@ public function save(){
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 $Menu = new Menu('menus');
 	$Orderdetail = new Orderdetail('orderdetails');
-		//$Product = new Product('products');
+	$Kitchen = new Kitchen('kitchens');
+	$Category = new Category('categories');
 $Beedy = new Beedy();
 	  $invoice = $data['invoice'];
 	  $menuId = $data['menuId'];
@@ -400,14 +400,15 @@ $Beedy = new Beedy();
 	//check through each item
 
 			$price  =  $Beedy->menuDetails((int)$menuId, "price");
-   //$pQty  =  $Beedy->menuDetails((int)$menuId, "qty");
+   $catId  =  $Beedy->menuDetails((int)$menuId, "catId");
 
 			$totalPrice = $price * $qty;
 			//$totalPrice +=$add;
 
 
 if($exist == 'false'):
-
+$kitchenId = $Category->findById($catId)->kitchenId;
+				$accept = $Kitchen->findById($kitchenId)->accept;
 										//create
 										//cal nhil
 									$nhil =	tax($totalPrice,2.5,102.5);
@@ -437,8 +438,9 @@ if($exist == 'false'):
 																		'nhil' => $nhil,
 																		'fund' => $fund,
 																		'vat' => $vat,
+																		'accept' => $accept,
 																		'shopId' => $shopId,
-																		'created_at' => '',
+																		'created_at' => ''
 															];
 								//send menu
 									$send = $Orderdetail->insert($fields);
@@ -515,8 +517,11 @@ public function saveBase(){
 
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
+	$Kitchen = new Kitchen('kitchens');
+	$Category = new Category('categories');
 	$Orderdetail = new Orderdetail('orderdetails');
 $Beedy = new Beedy();
+
 		$shopId= $data['shopId'];
 		$invoice= $data['invoice'];
 	   $localOrder = $data['localOrder'];
@@ -546,8 +551,10 @@ $length = is_array($localOrder)? count($localOrder):1 ;
 
 						//check through each item
 					$price  =  $Beedy->menuDetails((int)$menuId, "price");
+				 $catId  =  $Beedy->menuDetails((int)$menuId, "catId");
 					$totalPrice = $price * $qty;
-
+					$kitchenId = $Category->findById($catId)->kitchenId;
+					$accept = $Kitchen->findById($kitchenId)->accept;
 									//create
 									//cal nhil
 								$nhil =	tax($totalPrice,2.5,102.5);
@@ -571,6 +578,7 @@ $length = is_array($localOrder)? count($localOrder):1 ;
 																		'fund' => $fund,
 																		'vat' => $vat,
 																		'plate' => $plate,
+																		'accept' => $accept,
 																		'shopId' => $shopId,
 																		'created_at' => '',
 															];
@@ -709,6 +717,8 @@ $date = date("Y-m-d");
 	  //$seat = ($data['seat'])?  $data['seat']: '';
 			$waiter = ($data['waiter'])?  $data['waiter']: '';
 
+
+
 	$User = new User('users');
  	$Query  = $User->findByToken($token);
 
@@ -728,6 +738,9 @@ $date = date("Y-m-d");
 $ary = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice]  ];
 
 $Query = $Orderdetail->find($ary);
+//get who accepts
+	$accepts = implode(',', array_unique(array_column($Query, 'accept')));
+
 //foreach value
 foreach($Query as $Details):
 			$amount += $Details->total;
@@ -763,7 +776,7 @@ if($type == 'Dine-In'):
 																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'ord_type' => $type,
-																					//'kitchen' => $kitchen,
+																					'accept' => $accepts,
 																					'kitchen_status'=>$kitchen_status,
 																					'created_at' => '',
 																					'created_by' => $userId,
@@ -781,7 +794,7 @@ if($type == 'Dine-In'):
 																					'fund'=>$fund,
 																					'vat' => $vat,
 																					'ord_type' => $type,
-																					//'kitchen' => $kitchen,
+																					'accept' => $accepts,
 																					'kitchen_status'=>$kitchen_status,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
@@ -799,6 +812,7 @@ if($type == 'Dine-In'):
 																					'nhil'=>$nhil,
 																					'fund'=>$fund,
 																					'vat' => $vat,
+																					'accept' => $accepts,
 																					'kitchen_status'=>$kitchen_status,
 																					'created_at' => '',
 																					'created_by' => $userId,
@@ -814,6 +828,7 @@ if($type == 'Dine-In'):
 																					'nhil'=>$nhil,
 																					'fund'=>$fund,
 																					'vat' => $vat,
+																					'accept' => $accepts,
 																					'kitchen_status'=>$kitchen_status,
 																					'updated_at' => '',
 																					'updated_by' => $userId,
@@ -1149,11 +1164,12 @@ $del  = $Orderdetail->bulkDelete($params);
 
 	  $shopId = $_GET['shopId'];
 $d = "PENDING";
+$kitchen_status ="Approved";
 	$User = new User('users');
 	$Table = new HTable('htables');
 	$User = new User('users');
 
-		$params  = ['conditions'=> ['shopId = ? ',  'status = ? '],	'bind' => [$shopId, $d] ];
+		$params  = ['conditions'=> ['shopId = ? ',  'status = ? ', 'kitchen_status = ? '],	'bind' => [$shopId, $d, $kitchen_status] ];
 	$Receivables = $Sale->find($params);
 
 $i= 0;
@@ -1189,42 +1205,291 @@ foreach($Receivables as $Receivable):
 
 }
 
+public function fetchKitchenReceivable()
+{
+	$receivables  = [];
+
+	$out = array('error' => false);
+	$Sale = new Sale('sales');
+$Beedy = new Beedy();
+$Menu = new Menu('menus');
+	$Kitchen = new Kitchen('kitchens');
+	$Category = new Category('categories');
+	$Orderdetail = new Orderdetail('orderdetails');
+
+$shopId = $_GET['shopId'];
+$position= $_GET['position'];
+$d = "PENDING";
+$User = new User('users');
+
+		$params  = ['conditions'=> ['shopId = ? ',  'status = ? '],	'bind' => [$shopId, $d] ];
+	$Receivables = $Sale->find($params);
+
+
+foreach($Receivables as $Receivable):
+	$invoice = $Receivable->invoice_number;
+//var_dump($invoice);
+
+	//DISTINCT plate//
+					$orderParams  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
+
+	$data = [];
+ $Orders =  $Orderdetail->find($orderParams);
+	$uniquePlate = array_unique(array_column($Orders, 'plate'));
+
+	foreach($uniquePlate as $plate):
+				//do for others first
+				if($plate > 1){
+						$amount =0;
+						$nhil =0;
+						$fund =0;
+						$vat =0;
+						$total =0;
+						$item ='';
+						$acceptLog='';
+						$accepted='Yes';
+						$menu_id_log='';
+						//select based on plate
+				$plateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
+							$plateOrders =  $Orderdetail->find($plateParams);
+							//var_dump($plate);
+								//iterate through products under the plate
+								$numItems = count($plateOrders);
+								$i = 0;
+								foreach($plateOrders as $items){
+
+										$catId  =  $Beedy->menuDetails((int)$items->menu_id, "catId");
+										$kitchenId = $Category->findById($catId)->kitchenId;
+										$accept = $Kitchen->findById($kitchenId)->accept;
+										$accepted = $items->accepted;
+if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" || $position === "Admin" || $position === "Supervisor")):
+
+														if(++$i === $numItems) {
+																		//$item .=$Menu->findById($items->menu_id)->item;
+																		//$acceptLog .=$accept;
+																}else{
+																	}
+		$item .=$Menu->findById($items->menu_id)->item." & ";
+
+																		$acceptLog .=$accept.",";
+																		$menu_id_log .=$items->id.",";
+																$amount +=$Menu->findById($items->menu_id)->price;
+																$nhil += $items->nhil;
+																$fund += $items->fund;
+																$vat += $items->vat;
+																$total += $items->total;
+endif;
+														}
+if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" || $position === "Admin" || $position === "Supervisor")):
+//var_dump($menu_id_log);
+															$row = array(
+																'invoice' =>$invoice,
+																'base'=>'Yes',
+																'accept'=>array_unique(explode(',',substr(trim($acceptLog), 0, -1))),
+																'id'=>$plate,
+																'plate'=> $plate,
+																'menu_id'=>array_unique(explode(',',substr(trim($menu_id_log), 0, -1))),
+																'menu_name'=> substr(trim($item), 0, -1),
+																'qty'=>1,
+																'price'=>$amount,
+																'total'=> $fund + $nhil+ $vat+ $total
+															);
+
+															$receivables[]=$row;
+
+					endif;
+									$i+=1;
+				}
+				else{
+								$singlePlateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
+										$singlePlateOrders =  $Orderdetail->find($singlePlateParams);
+							$i = 1;
+										foreach($singlePlateOrders as $Order):
+
+										$catId  =  $Beedy->menuDetails((int)$Order->menu_id, "catId");
+										$kitchenId = $Category->findById($catId)->kitchenId;
+										$accept = $Kitchen->findById($kitchenId)->accept;
+										$accepted = $Order->accepted;
+if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" || $position === "Admin" || $position === "Supervisor")):
+													$row = array(
+										'invoice' =>$invoice,
+														'base'=>'No',
+														'id'=>$Order->id,
+														'menu_id'=> (int)trim($Order->id),
+														'menu_name'=> $Menu->findById($Order->menu_id)->item,
+														'accept' => $accept,
+														'qty'=>$Order->qty,
+														'price'=>$Order->price,
+														'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),
+														'created_at'=>$Order->created_at,
+														'updated_at'=>$Order->updated_at
+													);
+
+													$receivables[]=$row;
+
+													$i+=1;
+endif;
+										endforeach;
+			if ($position === $accept || $position === "SuperAdmin" || $position === "Admin" || $position === "Supervisor"):
+								$out['data'] = $data;
+endif;
+				}
+
+			endforeach;
+//$receivables[]= $data;
+endforeach;
+
+	 	$out['data'] = $receivables;
+    echo json_encode($out);
+
+  	die();
+
+}
+
+
 public  function kitchenApprove(){
 		 $result = array('error' => false);
 				$Sale = new Sale('sales');
    	$User = new User('users');
+	$Orderdetail = new Orderdetail('orderdetails');
 
-			$d = "PENDING";
+		 $status ="Yes";
+			$una = "Yes";
+			$kitchen_status ="Approved";
 	  $token = $_GET['token'];
-	  $id = $_GET['id'];
-		 $status ="Approved";
+		$shopId= $_GET['shopId'];
+		$invoice= $_GET['invoice'];
+	  $base = $_GET['base'];
+	  $menu_id = $_GET['menu_id'];
+	  $accept = $_GET['accept'];
 
-					$Query  = $User->findByToken($token);
+					$fields = [	'accepted' => $status ];
+						$params  = ['conditions'=> ['shopId = ?', 'invoice =?', 'accepted <> ?'], 'bind' => [$shopId,$invoice,$una] ];
+			$salesParams  = ['conditions'=> ['shopId = ? ',  'invoice_number = ? '],	'bind' => [$shopId, $invoice] ];
 
-					if($Query):
-					$userId = $Query->id;
+			if($base === "Yes"):
+					//var_dump($menu_id);
+					//update each menu in order details
+					foreach($menu_id as $id){
+						 $Orderdetail->update($fields, (int)$id);
+					}
+							$data = $Orderdetail->find($params);
+							$unCompleted = count($data);
+										if(	$unCompleted === 0){
+								//update sales
+								$Receivables = $Sale->find($salesParams);
 
-						endif;
+									$accepted= '';
+										$sale_id= 0;
+									foreach($Receivables as $Receivable):
+											$accepted = $Receivable->accept;
+											$sale_id = $Receivable->id;
+									endforeach;
+									$Salesfields = [	'accepted' => $accepted, 'kitchen_status' => $kitchen_status ];
+								if($Sale->update($Salesfields, (int)$sale_id)):
+										$result['status'] = "success";
+											$result['msg']  =   'Menu Approved successfully';
 
-					$fields = [
-													'kitchen_status' => $status,
-										 		'approved_by' => $userId,
-										];
+										else:
 
-								$send = $Sale->update($fields, (int)$id);
-					if($send):
+											$result['status'] = "error";
+											$result['msg'] = "Error:Please try again later";
+								endif;
+							}
+							else{
+								//send tank u message
+								$result['status'] = "success";
+											$result['msg']  =   'Menu Approved successfully';
 
-							$result['status'] = "success";
-							$result['msg']  =   'Transaction Completed';
+							}
 
-						else:
 
-							$result['status'] = "error";
-							$result['msg'] = "Error:Please try again later";
-						endif;
- echo json_encode($result);
+
+			else:
+//ordinary order
+
+								if($Orderdetail->update($fields, (int)$menu_id)):
+									//check orderdetails using invoice
+									//confirm if all is Yes
+
+							$data = $Orderdetail->find($params);
+
+							$unCompleted = count($data);
+							if(	$unCompleted === 0){
+								//update sales
+							 	$Receivables = $Sale->find($salesParams);
+
+									$accepted= '';
+										$sale_id= 0;
+									foreach($Receivables as $Receivable):
+									$accepted = $Receivable->accept;
+									$sale_id = $Receivable->id;
+									endforeach;
+									$Salesfields = [	'accepted' => $accepted, 'kitchen_status' => $kitchen_status];
+								if($Sale->update($Salesfields, (int)$sale_id)):
+										$result['status'] = "success";
+											$result['msg']  =   'Menu Approved successfully';
+
+										else:
+
+											$result['status'] = "error";
+											$result['msg'] = "Error:Please try again later";
+								endif;
+							}
+							else{
+								//send tank u message
+								$result['status'] = "success";
+											$result['msg']  =   'Menu Approved successfully';
+
+							}
+
+								endif;
+
+
+			endif;
+
+
+  echo json_encode($result);
 
 }
+
+//
+//public  function kitchenApprove(){
+//		 $result = array('error' => false);
+//				$Sale = new Sale('sales');
+//   	$User = new User('users');
+//
+//			$d = "PENDING";
+//	  $token = $_GET['token'];
+//	  $id = $_GET['id'];
+//		 $status ="Approved";
+//
+//					$Query  = $User->findByToken($token);
+//
+//					if($Query):
+//					$userId = $Query->id;
+//
+//						endif;
+//
+//					$fields = [
+//													'kitchen_status' => $status,
+//										 		'approved_by' => $userId,
+//										];
+//
+//								$send = $Sale->update($fields, (int)$id);
+//					if($send):
+//
+//							$result['status'] = "success";
+//							$result['msg']  =   'Transaction Completed';
+//
+//						else:
+//
+//							$result['status'] = "error";
+//							$result['msg'] = "Error:Please try again later";
+//						endif;
+// echo json_encode($result);
+//
+//}
 
 
 public  function payNow(){

@@ -34,18 +34,28 @@ class LoginController extends Controller
 
 
 				//$Staff->login($Staff->id,$remember);
-				$id = $Staff->id;
+							$id = $Staff->id;
+							$token = $Staff->token;
 
-					$hash = md5(uniqid() . rand(0, 100));
-						$fields = ['token'=>$hash];
-		$send = $this->Staff->update($fields, $id);
+							if($token === ""):
+
+							$hash = md5(uniqid() . rand(0, 100));
+							$fields = ['token'=>$hash];
+							$send = $this->Staff->update($fields, $id);
 
 
-				$result['error'] = false;
-				 $result['status'] = "green";
-				 $result['msg'] = "Login Successful";
-					$result['record'] = $this->Staff->findByUsername($data['username']);
-					//$result['token'] = $hash; $area_privilege= explode(",", $loadPermit);
+							$result['error'] = false;
+							$result['status'] = "green";
+							$result['msg'] = "Login Successful";
+							$result['record'] = $this->Staff->findByUsername($data['username']);
+							//$result['token'] = $hash; $area_privilege= explode(",", $loadPermit);
+
+							else:
+
+							$result['error'] = true;
+							$result['status'] = "red";
+							$result['msg'] = "Multiple logins: Shutdown other logins ";
+							endif;
 
 				}
 				else
@@ -61,5 +71,52 @@ class LoginController extends Controller
 
 
  }
+
+
+public function logout(){
+
+	 $result = array();
+	$data = json_decode(file_get_contents("php://input"), TRUE);
+
+	  $token = $data['token'];
+
+	$User = new User('users');
+ $Query  = $User->findByToken($token);
+
+	if($Query):
+	$userId = $Query->id;
+
+	endif;
+
+ 					$Existing = $this->Staff->findById((int)$userId);
+
+
+		   		if($Existing->token === $token  )
+							{
+
+								$fields = [				'token' => "" ];
+									$send = $this->Staff->update($fields, (int)$userId);
+							if($send):
+
+								$result['status'] = "success";
+
+							else:
+
+								$result['status'] = "error";
+								$result['msg'] = "Error: Logout was not successful. Please try again later";
+							endif;
+
+							}
+							else{
+									$result['status'] = "same";
+								$result['msg']  =   'Token mismatched. Please try again later';
+							}
+
+
+  echo json_encode($result);
+
+
+}
+
 
 }

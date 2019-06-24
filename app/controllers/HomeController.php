@@ -89,7 +89,7 @@ $topFour = array_slice($sales_order, 0, 4, true);
 $total_qty = 0;
 $total_amount = 0;
 
-$i= 0;
+$i= 1;
 foreach($topFour as $key => $val){
 	//echo $key.' - '.$val."<br/>";
 $p =  $Beedy->getColById($Menu,   $key, 'item') ;

@@ -43,6 +43,7 @@ public function save(){
 
 	  $token = $data['token'];
 	  $name = $data['name'];
+	  $accept = $data['accept'];
 	  $shopId = $data['shopId'];
 		 $type = $data['type'];
 
@@ -63,6 +64,7 @@ public function save(){
 			$fields = [
 										'name' => $name,
 										'base' => $type,
+										'accept' => $accept,
 										'shopId' => $shopId,
 										'created_by' => $userId,
 										'created_at' => '',
@@ -126,6 +128,7 @@ public function update(){
 	  $id = $data['id'];
 	  $name = $data['name'];
 	  $token = $data['token'];
+	  $accept = $data['accept'];
 		 $type = $data['type'];
 
 	$User = new User('users');
@@ -139,12 +142,13 @@ public function update(){
  					$Kitchen = $this->Kitchen->findById((int)$id);
 
 
-		   		if($Kitchen->name != $name || $Kitchen->base != $type )
+		   		if($Kitchen->name != $name || $Kitchen->base != $type || $Kitchen->accept != $accept )
 							{
 
 								$fields = [
 										'name' => $name,
 										'base' => $type,
+										'accept' => $accept,
 										'updated_by' => $userId,
 										'updated_at' => '',
 							];
