@@ -37,7 +37,7 @@ class LoginController extends Controller
 							$id = $Staff->id;
 							$token = $Staff->token;
 
-							if($token === ""):
+							if($token === "" || $token === NULL):
 
 							$hash = md5(uniqid() . rand(0, 100));
 							$fields = ['token'=>$hash];

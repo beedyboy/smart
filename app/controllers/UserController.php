@@ -14,6 +14,10 @@ class UserController extends Controller
 
 	}
 
+	public function a(){
+		echo password_hash('ekua', PASSWORD_DEFAULT);
+	}
+
 
 public function list()
 {

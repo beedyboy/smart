@@ -71,48 +71,43 @@ foreach($MenuList as $Menu):
 }
 
 
- public function getCartItem()
+
+ public function fetchOrder()
 {
-//	$data = [];
-//	$out = array('error' => false);
-//	$Orderdetail = new Orderdetail('orderdetails');
-//	$Menu = new Menu('menus');
-//		$shopId= $_GET['shopId'];
-//		$invoice= $_GET['invoice'];
-//		$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
-//
-// $Orders =  $Orderdetail->find($params);
-//$i = 1;
-//	foreach($Orders as $Order):
-//
-//	$row = array(
-//		'key'=>'key'.$i,
-//		'id'=>$Order->id,
-//		'menu_id'=> $Order->menu_id,
-//		'menu_name'=> $Menu->findById($Order->menu_id)->item,
-//	 'qty'=>$Order->qty,
-//		'price'=>$Order->price,
-//		'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),
-//		'discount'=>$Order->discount,
-//		'vat'=>$Order->vat,
-//		'fund'=>$Order->fund,
-//		'nhil'=>$Order->nhil,
-//		'nfund'=> $Order->fund+$Order->nhil,
-//		//'total'=>$Order->total,
-//		'created_at'=>$Order->created_at,
-//		'updated_at'=>$Order->updated_at
-//	);
-//
-//	$data[]=$row;
-//
-//	$i+=1;
-//
-//	endforeach;
-// 	$out['data'] = $data;
-//	   echo json_encode($out);
-//
-//  	die();
-	//$data = json_decode(file_get_contents("php://input"), TRUE);
+
+	$Sale = new Sale('sales');
+	$data = [];
+	$out = array('error' => false);
+		$shopId= $_GET['shopId'];
+		$value= $_GET['value'];
+		$params  = ['conditions'=> ['shopId = ?', 'invoice_number LIKE ?'], 'bind' => [$shopId, "%$value%"] ];
+	$SaleList = $Sale->find($params);
+foreach($SaleList as $Order):
+			$row = array(
+				'id'=>$Order->id,
+				'invoice_number'=>$Order->invoice_number,
+				'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->amount),
+				//'item'=>$Order->item,  
+	);
+
+	$data[]=$row;
+
+
+	endforeach;
+  	$out['data'] = $data;
+//$out['data'] = $MenuList;
+//$out['data'] =  $Sale->find($params);
+	   echo json_encode($out);
+
+  	die();
+
+}
+
+
+
+public function getCartItem()
+{
+
 	  $invoice = $_GET['invoice'];
 	  $shopId = $_GET['shopId'];
 	$Orderdetail = new Orderdetail('orderdetails');
@@ -973,7 +968,7 @@ $del  = $Orderdetail->bulkDelete($params);
 	 	//$out['data'] = $data;
     echo json_encode($result);
 
-  	die();
+  	//die();
 	}
 
 
@@ -1938,12 +1933,35 @@ foreach($Reports as $Report):
 
 
 
- public function destroy($id)
-    {
-       $del = $this->Role->delete($id);
-      if($del): echo "Role Deleted Successfully"; else: "Error deleting this data... Please try again later"; endif;
+ public function cancelOrder()
+  {
+					$result = array();
+				$invoice=$_GET['invoice'];
+				$shopId=$_GET['shopId'];
+					 $id = $_GET['id'];
 
+ 		$Menu = new Menu('menus');
+						$Sale = new Sale('sales');
+				$Orderdetail = new Orderdetail('orderdetails');
 
+       $del = $Sale->delete($id);
+      if($del):
+										$params = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId,  $invoice]  ];
+
+									$send  = $Orderdetail->bulkDelete($params);
+						if($send):
+
+								$result['status'] = "success";
+								$result['msg']  =   'Order Deleted Successfully';
+
+							else:
+
+								$result['status'] = "error";
+								$result['msg'] = "Error: Order was not deleted. Please try again later";
+							endif;
+
+					endif;
+					 echo json_encode($result);
     }
 
 }
