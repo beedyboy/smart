@@ -87,7 +87,7 @@ foreach($SaleList as $Order):
 				'id'=>$Order->id,
 				'invoice_number'=>$Order->invoice_number,
 				'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->amount),
-				//'item'=>$Order->item,  
+				//'item'=>$Order->item,
 	);
 
 	$data[]=$row;
@@ -1223,6 +1223,8 @@ $User = new User('users');
 
 foreach($Receivables as $Receivable):
 	$invoice = $Receivable->invoice_number;
+	$orderNumber = $Receivable->id;
+	$orderType = $Receivable->ord_type;
 //var_dump($invoice);
 
 	//DISTINCT plate//
@@ -1278,6 +1280,8 @@ endif;
 if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" || $position === "Admin" || $position === "Supervisor")):
 //var_dump($menu_id_log);
 															$row = array(
+																'orderType' => $orderType,
+																'orderNumber' => $orderNumber,
 																'invoice' =>$invoice,
 																'base'=>'Yes',
 																'accept'=>array_unique(explode(',',substr(trim($acceptLog), 0, -1))),
@@ -1307,6 +1311,8 @@ if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" |
 										$accepted = $Order->accepted;
 if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" || $position === "Admin" || $position === "Supervisor")):
 													$row = array(
+																'orderType' => $orderType,
+														'orderNumber' => $orderNumber,
 										'invoice' =>$invoice,
 														'base'=>'No',
 														'id'=>$Order->id,
