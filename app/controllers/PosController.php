@@ -1208,6 +1208,8 @@ public function fetchKitchenReceivable()
 	$Sale = new Sale('sales');
 $Beedy = new Beedy();
 $Menu = new Menu('menus');
+	$User = new User('users');
+	$Table = new HTable('htables');
 	$Kitchen = new Kitchen('kitchens');
 	$Category = new Category('categories');
 	$Orderdetail = new Orderdetail('orderdetails');
@@ -1224,7 +1226,9 @@ $User = new User('users');
 foreach($Receivables as $Receivable):
 	$invoice = $Receivable->invoice_number;
 	$orderNumber = $Receivable->id;
+	$tableName = $Table->findById($Receivable->tid)->name;
 	$orderType = $Receivable->ord_type;
+	$waiter = $User->findById($Receivable->waiter)->username;
 //var_dump($invoice);
 
 	//DISTINCT plate//
@@ -1282,6 +1286,8 @@ if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" |
 															$row = array(
 																'orderType' => $orderType,
 																'orderNumber' => $orderNumber,
+																'waiter' => $waiter,
+																'table' => $tableName,
 																'invoice' =>$invoice,
 																'base'=>'Yes',
 																'accept'=>array_unique(explode(',',substr(trim($acceptLog), 0, -1))),
@@ -1311,9 +1317,11 @@ if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" |
 										$accepted = $Order->accepted;
 if ($accepted !=="Yes" && ($position === $accept || $position === "SuperAdmin" || $position === "Admin" || $position === "Supervisor")):
 													$row = array(
+																'waiter' => $waiter,
 																'orderType' => $orderType,
 														'orderNumber' => $orderNumber,
-										'invoice' =>$invoice,
+																'table' => $tableName,
+														'invoice' =>$invoice,
 														'base'=>'No',
 														'id'=>$Order->id,
 														'menu_id'=> (int)trim($Order->id),
@@ -1454,43 +1462,7 @@ public  function kitchenApprove(){
 
 }
 
-//
-//public  function kitchenApprove(){
-//		 $result = array('error' => false);
-//				$Sale = new Sale('sales');
-//   	$User = new User('users');
-//
-//			$d = "PENDING";
-//	  $token = $_GET['token'];
-//	  $id = $_GET['id'];
-//		 $status ="Approved";
-//
-//					$Query  = $User->findByToken($token);
-//
-//					if($Query):
-//					$userId = $Query->id;
-//
-//						endif;
-//
-//					$fields = [
-//													'kitchen_status' => $status,
-//										 		'approved_by' => $userId,
-//										];
-//
-//								$send = $Sale->update($fields, (int)$id);
-//					if($send):
-//
-//							$result['status'] = "success";
-//							$result['msg']  =   'Transaction Completed';
-//
-//						else:
-//
-//							$result['status'] = "error";
-//							$result['msg'] = "Error:Please try again later";
-//						endif;
-// echo json_encode($result);
-//
-//}
+
 
 
 public  function payNow(){
@@ -1628,8 +1600,8 @@ $discountA =  $A->discount;
 		endforeach;
 
 
-			 $amount = $amountA + $amountB;
-			 $balance = $balanceA + $balanceB;
+			 $amount = round($amountA + $amountB,2);
+			 $balance = round($balanceA + $balanceB,2);
 			 $discount = $discountA + $discountB;
 
 									$fields = [
@@ -1689,8 +1661,9 @@ $discountA =  $A->discount;
 	$Reports = $Sale->find($params);
 
 $i= 0;
+$totalAmount =  0;
 foreach($Reports as $Report):
-
+$totalAmount += round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2);
 	$row = array(
 		'key'=>'key'.$i,
 		'id'=>$Report->id,
@@ -1714,6 +1687,7 @@ foreach($Reports as $Report):
 	endforeach;
 
 	 	$out['data'] = $data;
+	 	$out['totalAmount'] = $totalAmount;
     echo json_encode($out);
 
   	die();
