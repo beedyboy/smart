@@ -159,11 +159,13 @@ $Beedy = new Beedy();
 								'key'=>'key'.$plate,
 								'base'=>'Yes',
 								'id'=>$plate,
+								'plate'=>$plate,
+								'invoice' => $invoice,
 								'menu_id'=> $plate,
 								'menu_name'=> $item,
 								'qty'=>1,
 								'price'=>$amount,
-								'total'=> $fund + $nhil+ $vat+ $total,
+								'total'=> round(($fund + $nhil+ $vat+ $total),2),
 								'vat'=>$vat,
 								'fund'=>$fund,
 								'nhil'=>$nhil,
@@ -183,12 +185,13 @@ $Beedy = new Beedy();
 	$row = array(
 		'key'=>'key'.$i,
 		'base'=>'No',
+								'plate'=>$plate,
 		'id'=>$Order->id,
 		'menu_id'=> $Order->menu_id,
 		'menu_name'=> $Menu->findById($Order->menu_id)->item,
 	 'qty'=>$Order->qty,
 		'price'=>$Order->price,
-		'total'=> ($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),
+		'total'=> round(($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),2),
 		'discount'=>$Order->discount,
 		'vat'=>$Order->vat,
 		'fund'=>$Order->fund,
@@ -899,7 +902,6 @@ $result = array();
 	  $token = $_GET['token'];
 	  $shopId = $_GET['shopId'];
 $d = "PENDING";
-	$User = new User('users');
 	$Table = new HTable('htables');
 	$Seat = new Seat('seats');
 	$User = new User('users');
@@ -940,7 +942,53 @@ $d = "PENDING";
 
 }
 
- public function emptyCart()
+
+	  public function fetchKitchenBasket()
+{
+	$data  = [];
+
+	$out = array('error' => false);
+	$Orderdetail = new Orderdetail('orderdetails');
+
+	  $token = $_GET['token'];
+	  $shopId = $_GET['shopId'];
+$d = "Yes";
+ 	$Menu = new Menu('menus');
+	$User = new User('users');
+ 	$Query  = $User->findByToken($token);
+
+	if($Query):
+	$userId = $Query->id;
+	endif;
+
+		$params  = ['conditions'=> ['shopId = ? ', 'approved_by = ? ', 'accepted = ? '],	'bind' => [$shopId, $userId, $d] ];
+	$Baskets = $Orderdetail->find($params);
+
+		foreach($Baskets as $Basket):
+
+	$row = array(
+		'id'=>$Basket->id,
+		'invoice'=>$Basket->invoice,
+		'qty'=> $Basket->qty,
+	'item'=>$Menu->findById($Basket->menu_id)->item,
+	'total'=> ($Basket->fund + $Basket->nhil+ $Basket->vat+ $Basket->total),
+		'created_at'=>$Basket->created_at,
+		'updated_at'=>$Basket->updated_at
+	);
+
+	$data[]=$row;
+	endforeach;
+
+	 	$out['data'] = $data;
+    echo json_encode($out);
+
+  	die();
+
+}
+
+
+
+	public function emptyCart()
 	{
 		$result = array();
 				$invoice=$_GET['invoice'];
@@ -1127,6 +1175,61 @@ $afterTax =taxItem($fundper,$vat);
 
 
 
+
+public function editPlateItem(){
+
+	 $result = array(); 
+	$Orderdetail = new Orderdetail('orderdetails');
+$Beedy = new Beedy();
+
+		$shopId= $_GET['shopId'];
+		$invoice= $_GET['invoice'];
+		$plate= $_GET['plate'];
+							$Menu = new Menu('menus');
+$item = [];
+						//DISTINCT plate//
+									$orderParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
+
+					$Orders =  $Orderdetail->find($orderParams);
+	$i=1;
+			foreach($Orders as $Order){
+								$row = array(
+						'key'=>'key'.$i,
+						'base'=>'No',
+						'id'=>$Order->id,
+						'menu_id'=> $Order->menu_id,
+						'menu_name'=> $Menu->findById($Order->menu_id)->item,
+						'qty'=>$Order->qty,
+						'price'=>$Order->price,
+						'total'=> round(($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),2),
+						'discount'=>$Order->discount,
+						'vat'=>$Order->vat,
+						'fund'=>$Order->fund,
+						'nhil'=>$Order->nhil,
+						'nfund'=> $Order->fund+$Order->nhil,
+						//'total'=>$Order->total,
+						'created_at'=>$Order->created_at,
+						'updated_at'=>$Order->updated_at
+					);
+
+	$item[]=$row;
+
+	$i+=1;
+			}
+		$result['item'] = $item;
+					$localOrder =  array_column($Orders, 'menu_id');
+					$localQty =  array_column($Orders, 'qty');
+
+				$data = array(
+			 'localOrder'=> $localOrder,
+				 'localQty'=>  $localQty
+					);
+
+
+							$result['data'] = $data;
+				echo json_encode($result);
+}
+
 public function clearCartItem($params)
 {
 	$result = array();
@@ -1164,7 +1267,8 @@ $kitchen_status ="Approved";
 	$Table = new HTable('htables');
 	$User = new User('users');
 
-		$params  = ['conditions'=> ['shopId = ? ',  'status = ? ', 'kitchen_status = ? '],	'bind' => [$shopId, $d, $kitchen_status] ];
+		$params  = ['conditions'=> ['shopId = ? ',  'status = ? '],	'bind' => [$shopId, $d] ];
+//$params  = ['conditions'=> ['shopId = ? ',  'status = ? ', 'kitchen_status = ? '],	'bind' => [$shopId, $d, $kitchen_status] ];
 	$Receivables = $Sale->find($params);
 
 $i= 0;
@@ -1372,7 +1476,10 @@ public  function kitchenApprove(){
 	  $menu_id = $_GET['menu_id'];
 	  $accept = $_GET['accept'];
 
-					$fields = [	'accepted' => $status ];
+				$Query  = $User->findByToken($token);
+				if($Query):	$userId = $Query->id; 	endif;
+
+					$fields = [	'accepted' => $status, 'approved_by' => $userId ];
 						$params  = ['conditions'=> ['shopId = ?', 'invoice =?', 'accepted <> ?'], 'bind' => [$shopId,$invoice,$una] ];
 			$salesParams  = ['conditions'=> ['shopId = ? ',  'invoice_number = ? '],	'bind' => [$shopId, $invoice] ];
 
