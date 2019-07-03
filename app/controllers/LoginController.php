@@ -79,6 +79,7 @@ public function logout(){
 	$data = json_decode(file_get_contents("php://input"), TRUE);
 
 	  $token = $data['token'];
+	  $fullname = $data['fullname'];
 
 	$User = new User('users');
  $Query  = $User->findByToken($token);
@@ -91,7 +92,7 @@ public function logout(){
  					$Existing = $this->Staff->findById((int)$userId);
 
 
-		   		if($Existing->token === $token  )
+		   		if($Existing->token === $token || $Existing->fullname === $fullname  )
 							{
 
 								$fields = [				'token' => "" ];

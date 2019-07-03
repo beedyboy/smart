@@ -14,11 +14,7 @@ class UserController extends Controller
 
 	}
 
-	public function a(){
-		echo password_hash('ekua', PASSWORD_DEFAULT);
-	}
-
-
+ 
 public function list()
 {
 	$data = [];
@@ -110,7 +106,38 @@ else:
 
 }
 
-#endregion
+public function logUserOut(){
+
+	 $result = array();
+	$data = json_decode(file_get_contents("php://input"), TRUE);
+
+$id = $data['id'];
+$token = Null;
+
+
+							///search for all users with this new name
+
+					$fields = [
+										'token' => $token,
+									 	'updated_at' => '',
+							];
+
+						$send = $this->User->update($fields, (int)$id);
+							if($send):
+
+								$result['status'] = "success";
+								$result['msg']  =   'Account logged out successfully';
+
+							else:
+
+								$result['status'] = "error";
+								$result['msg'] = "Error: User\'s record was not updated. Please try again later";
+							endif;
+
+
+  echo json_encode($result);
+
+}
 
 
 /**
@@ -124,27 +151,12 @@ public function update(){
 
 	 $result = array();
 	$data = json_decode(file_get_contents("php://input"), TRUE);
-//
-//$sales = (empty($data['sales'])) ? [] : $data['sales'];
-//$user = (empty($data['user'])) ? [] :$data['user'] ;
-//$menu = (empty($data['menu'])) ? [] : $data['menu'];
-//$supplier = (empty($data['supplier'])) ? [] : $data['supplier'];
-//$hall = (empty($data['hall'])) ? [] : $data['hall'];
-//$seat = (empty($data['seat'])) ? [] : $data['seat'];
-//
-//$table = (empty($data['table'])) ? [] : $data['table'];
-//$purchases = (empty($data['purchases'])) ? [] : $data['purchases'];
-//$acquisition = (empty($data['acquisition'])) ? [] : $data['acquisition'];
+
 $username = $data['username'];
 $fullname = $data['fullname'];
 $position = $data['position'];
 $date_joined = $data['date_joined'];
 $id = $data['id'];
-
-
-//$roleArray = array_merge($sales,$user, $menu,$supplier,$hall,$seat, $table, $purchases, $acquisition);
-//
-//$role = implode(",", $roleArray);
 
 
 							///search for all users with this new name
