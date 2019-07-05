@@ -80,6 +80,7 @@ public function save(){
 	  $price = $data['price'];
 
 	$User = new User('users');
+	$Category = new Category('categories');
 
 $Query  = $User->findByToken($token);
 
@@ -94,11 +95,13 @@ $Query  = $User->findByToken($token);
 
 
 	if(count($exist) < 1):
+$kitchenId = $Category->findById($catId)->kitchenId;
 		$fields = [
 										'shopId' => $shopId,
 										'item'=>$item,
 										'price' => $price,
 										'catId' => $catId,
+										'kitchen' => $kitchenId,
 										'created_at' => '',
 										'created_by' => $userId
 							];
@@ -148,6 +151,7 @@ $id = $data['id'];
 	  $price = $data['price'];
 
 	$User = new User('users');
+	$Category = new Category('categories');
 $Query  = $User->findByToken($token);
 
 	if($Query):
@@ -170,12 +174,13 @@ $Query  = $User->findByToken($token);
 
 
 				if(!in_array( $id, $ary)):
-
+$kitchenId = $Category->findById($catId)->kitchenId;
 								$fields = [
 															'shopId' => $data['shopId'],
 															'item'=>$item,
 															'price' => $price,
 															'catId' => $catId,
+															'kitchen' => $kitchenId,
 															'updated_at' => '',
 															'updated_by' => $userId
 												];

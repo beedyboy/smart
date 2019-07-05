@@ -25,7 +25,7 @@ define('DB_NAME', 'smartrestaurant'); //database name
 
 define('DB_USER', 'root'); // database user
 
-define('DB_PASSWORD', '');
+define('DB_PASSWORD', 'beedy');
  // database password
 define('DB_HOST', '127.0.0.1'); //database host ***use IP address to avoid DNS look up on live server
 
@@ -56,8 +56,8 @@ define('SITE_TITLE', 'SMART RESTAURANT'); //this will be used if no title is set
 
 //export const serverUrl = 'http://192.168.43.215/project/php/smart/'
 define('base_url', '/smart/');
-define('origin', 'http://192.168.0.5');
-//define('origin', 'http://localhost:3000');
+//define('origin', 'http://192.168.0.5');
+define('origin', 'http://localhost:3000');
 /*
 |--------------------------------------------------------------------------
 | Display Debug backtrace

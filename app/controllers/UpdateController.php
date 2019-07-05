@@ -26,14 +26,15 @@ class UpdateController extends Controller
 {
 
 
-$query = $this->_db->query("ALTER TABLE `orderdetails` ADD `accepted` ENUM('Yes','No') NULL DEFAULT 'No' AFTER `accept`;
-");
-$query = $this->_db->query(" ALTER TABLE `orderdetails` ADD `approved_by` INT NULL AFTER `accepted`, ADD INDEX (`approved_by`)");
+$query = $this->_db->query("ALTER TABLE `menus` ADD `kitchen` INT NULL AFTER `catId`, ADD INDEX (`kitchen`)");
 
-$query = $this->_db->query("ALTER TABLE `orderdetails` ADD FOREIGN KEY (`approved_by`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+$query = $this->_db->query("ALTER TABLE `menus` ADD FOREIGN KEY (`kitchen`) REFERENCES `kitchens`(`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 
-$query = $this->_db->query("ALTER TABLE `orderdetails` ADD `edited` ENUM('Yes','No') NULL DEFAULT
-																											'No' AFTER `approved_by`");
+
+//$query = $this->_db->query("ALTER TABLE `orderdetails` ADD FOREIGN KEY (`approved_by`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+//
+//$query = $this->_db->query("ALTER TABLE `orderdetails` ADD `edited` ENUM('Yes','No') NULL DEFAULT
+//																											'No' AFTER `approved_by`");
 
 																											if($query): "DB updated"; endif;
 

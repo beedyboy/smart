@@ -621,7 +621,7 @@ $data  = [];
 			'balance'=>$DATA->balance,
 				'table'=> $Table->findById($DATA->tid)->name,
 				//'seat'=> $Seat->findById($DATA->sid)->name,
-			'ord_type'=>$DATA->ord_type, 
+			'ord_type'=>$DATA->ord_type,
 				'vat'=>$DATA->vat,
 				'fund'=>$DATA->fund,
 				'nhil'=>round($DATA->nhil,2),
@@ -1893,8 +1893,8 @@ $main =  $Beedy->getColById($Kitchen, $Beedy->getColById($Category, $Beedy->getC
 		'menu_name'=> $p,
 	 'sold'=>$val,
 	 'kitchen'=>$main,
-		'normalPrice'=>$price_order[$key],
-		'price'=>$nhil_price[$key] + $fund_price[$key] + $vat_price[$key] + $price_order[$key]
+		'normalPrice'=>round($price_order[$key],2),
+		'price'=>round($nhil_price[$key] + $fund_price[$key] + $vat_price[$key] + $price_order[$key],2)
 	);
 
 	$data[]=$row;
