@@ -1,5 +1,0 @@
-{
-    "require": {
-        "srmklive/flysystem-dropbox-v2": "^1.0"
-    }
-}

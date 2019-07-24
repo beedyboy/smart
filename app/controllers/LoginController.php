@@ -80,14 +80,10 @@ public function logout(){
 
 	  $token = $data['token'];
 	  $fullname = $data['fullname'];
+	  $userId = $data['userId'];
 
-	$User = new User('users');
- $Query  = $User->findByToken($token);
-
-	if($Query):
-	$userId = $Query->id;
-
-	endif;
+			$User = new User('users');
+  
 
  					$Existing = $this->Staff->findById((int)$userId);
 
@@ -110,7 +106,7 @@ public function logout(){
 							}
 							else{
 									$result['status'] = "same";
-								$result['msg']  =   'Token mismatched. Please try again later';
+								$result['msg']  =   'Token mismatched. Please try again later ' . $userId;
 							}
 
 

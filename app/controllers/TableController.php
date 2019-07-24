@@ -47,7 +47,7 @@ public function list()
 
 }
 
-
+ 
 public function save(){
 
 	 $result = array();
@@ -56,9 +56,25 @@ public function save(){
 	 $name =  $data['name'];
   $Hall = new Hall('halls');
 	$Beedy = new Beedy();
-  $number = 	substr($Beedy->getColById($Hall, $hid, 'name'), 0,3)."-".$name;
+  //$number = 	substr($Beedy->getColById($Hall, $hid, 'name'), 0,3)."-".$name;
+	
+	$rname =  explode(' ',$Beedy->getColById($Hall, $hid, 'name'));
+	
+	$number = '';
+	$i = 1;
+	foreach($rname as $newname){
+		
+		if($i === count($rname)):
+			$number .= substr($newname, 0,3);
+		else:
+			$number .= substr($newname, 0,3)."-";
+		endif;
+		
+		$i++;
+	}
+	
 			$fields = [
-										'name' => $number,
+										'name' => $number."-".$name,
 										'shopId' => $data['shopId'],
 										'hid' => $hid,
 							];
@@ -102,15 +118,30 @@ public function update(){
 	  $id = $data['id'];
   $Hall = new Hall('halls');
 	$Beedy = new Beedy();
-  $number = 	substr($Beedy->getColById($Hall, $hid, 'name'), 0,3)."-".$name;
+  //$number = 	substr($Beedy->getColById($Hall, $hid, 'name'), 0,3)."-".$name;
 
+		
+	$rname =  explode(' ',$Beedy->getColById($Hall, $hid, 'name'));
+	
+	$number = '';
+	$i = 1;
+	foreach($rname as $newname){
+		
+		if($i === count($rname)):
+			$number .= substr($newname, 0,3);
+		else:
+			$number .= substr($newname, 0,3)."-";
+		endif;
+		
+		$i++;
+	}
 
 							$HTable = $this->HTable->findById((int)$id);
 
 		   		if($HTable->name != $name || $HTable->hid != $hid)
 							{
 								$fields = [
-										'name' => $number,
+										'name' => $number."-".$name,
 										'hid' => $hid
 							];
 									$send = $this->HTable->update($fields, (int)$id);

@@ -193,5 +193,26 @@ public function update(){
 
     }
 
+				public function getKitchenFromMenu()
+				{
+					
+					$shopId = $_GET['shopId'];
+					$result = array();
+					$data = [];
+					$Menu = new Menu('menus');
+					$params =  [ 'conditions'=> 'shopId = ?', 'bind' => [$shopId]  ];
+					$AllMenu = $Menu->find($params);
+					$kitchens = array_unique(array_column($AllMenu, 'kitchen'));
+					//dnd($kitchens);
+					foreach($kitchens as $kitchen){ 
+						$row= array(
+							'kitchen'=> $this->Kitchen->findById((int)$kitchen)->name,
+							'id'=> $kitchen
+						);
+						$data[] = $row;
+					}
+					$result['data'] = $data;
+					echo json_encode($result);
+				}
 
 }

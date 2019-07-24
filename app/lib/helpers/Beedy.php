@@ -153,16 +153,127 @@ public function getUserId($token)
 	$User = new User('users');
  	$Query  = $User->findByToken($token);
 
-	if($Query):
-	return $userId = $Query->id;
-
-	else:
-	return '';
-
-	endif;
+				if($Query):
+				return $userId = $Query->id;
+			
+				else:
+				return '';
+			
+				endif;
 }
 
-public  function getCompanyId()
+
+
+public function getInvoiceItems($invoice,$shopId)
+{
+ 
+					   $result = array();
+	$Orderdetail = new Orderdetail('orderdetails'); 
+			$Menu = new Menu('menus');
+
+		//DISTINCT plate//
+					$orderParams  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
+
+	$data = [];
+ $Orders =  $Orderdetail->find($orderParams);
+	$uniquePlate = array_unique(array_column($Orders, 'plate'));
+
+	foreach($uniquePlate as $plate):
+
+		//do for others first
+		if($plate > 1){
+
+				$amount =0;
+				$nhil =0;
+				$fund =0;
+				$vat =0;
+				$total =0;
+				$item ='';
+				//select based on plate
+		$plateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
+					$plateOrders =  $Orderdetail->find($plateParams);
+					//var_dump($plate);
+						//iterate trhough products under the plate
+						$numItems = count($plateOrders);
+						$i = 0;
+						foreach($plateOrders as $items){
+								if(++$i === $numItems) {
+										$item .=$Menu->findById($items->menu_id)->item;
+								}else{
+										$item .=$Menu->findById($items->menu_id)->item." & ";
+								}
+
+								$amount +=$Menu->findById($items->menu_id)->price;
+								$nhil += $items->nhil;
+								$fund += $items->fund;
+								$vat += $items->vat;
+								$total += $items->total; 
+						}
+
+							$row = array(
+								'key'=>'key'.$plate,
+								'base'=>'Yes',
+								'id'=>$plate,
+								'plate'=>$plate,
+								'invoice' => $invoice,
+								'menu_id'=> $plate,
+								'menu_name'=> $item,
+								'qty'=>1,
+								'price'=>$amount,
+								'total'=> round(($fund + $nhil+ $vat+ $total),2),
+								'vat'=>$vat,
+								'fund'=>$fund,
+								'nhil'=>$nhil,
+
+							);
+
+							$data[]=$row;
+
+	$i+=1;
+		}
+		else{
+			$singlePlateParams  = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, (int)$plate] ];
+					$singlePlateOrders =  $Orderdetail->find($singlePlateParams);
+		$i = 0;
+	foreach($singlePlateOrders as $Order):
+
+	$row = array(
+		'key'=>'key'.$i,
+		'base'=>'No', 
+		'id'=>$Order->id,
+		'menu_id'=> $Order->menu_id,
+		'menu_name'=> $Menu->findById($Order->menu_id)->item,
+	 'qty'=>$Order->qty,
+		'price'=>$Order->price,
+		'total'=> round(($Order->fund + $Order->nhil+ $Order->vat+ $Order->total),2),
+		'discount'=>$Order->discount,
+		'vat'=>$Order->vat,
+		'fund'=>$Order->fund,
+		'nhil'=>$Order->nhil,
+		'nfund'=> $Order->fund+$Order->nhil 
+	);
+
+	$data[]=$row;
+
+	$i+=1;
+
+	endforeach;
+ 	$result['children'] = $data;
+
+		}
+	$result['children'] = $data;
+	endforeach;
+	return json_encode($result);
+}
+
+
+
+
+
+
+
+ 
+	public  function getCompanyId()
 {
 	return  $org_id = Auth::auth('org_id');
 

@@ -43,8 +43,9 @@ class PosController extends Controller
 	$data = [];
 	$out = array('error' => false);
 		$shopId= $_GET['shopId'];
+		$id= $_GET['id'];
 		$value= $_GET['value'];
-		$params  = ['conditions'=> ['shopId = ?', 'item LIKE ?'], 'bind' => [$shopId, "%$value%"] ];
+		$params  = ['conditions'=> ['shopId = ?', 'kitchen = ?', 'item LIKE ?'], 'bind' => [$shopId, $id, "%$value%"] ];
 	$MenuList = $Menu->find($params);
 foreach($MenuList as $Menu):
 	$kitchenId = $Category->findById($Menu->catId)->kitchenId;
@@ -110,8 +111,7 @@ public function getCartItem()
 
 	  $invoice = $_GET['invoice'];
 	  $shopId = $_GET['shopId'];
-	$Orderdetail = new Orderdetail('orderdetails');
-$Beedy = new Beedy();
+			$Orderdetail = new Orderdetail('orderdetails'); 
 			$Menu = new Menu('menus');
 
 		//DISTINCT plate//
@@ -151,8 +151,7 @@ $Beedy = new Beedy();
 								$fund += $items->fund;
 								$vat += $items->vat;
 								$total += $items->total;
-
-
+ 
 						}
 
 							$row = array(
@@ -617,10 +616,10 @@ $data  = [];
 	$row = array(
 				'id'=>$DATA->id,
 				'invoice_number'=>$DATA->invoice_number,
+				'order_number'=> $DATA->order_number,
 				'amount'=> $DATA->amount,
 			'balance'=>$DATA->balance,
 				'table'=> $Table->findById($DATA->tid)->name,
-				//'seat'=> $Seat->findById($DATA->sid)->name,
 			'ord_type'=>$DATA->ord_type,
 				'vat'=>$DATA->vat,
 				'fund'=>$DATA->fund,
@@ -649,14 +648,10 @@ public function saveOrder(){
 $date = date("Y-m-d");
 	  $token = $data['token'];
 	  $invoice = $data['invoice'];
-	  $shopId = $data['shopId'];
-	  //$kitchen = ($data['kitchen'])? $data['kitchen']: 'Local';
+	  $shopId = $data['shopId']; 
 	  $type = ($data['type']) ? 'Dine-In': 'Take Out';
-	  $table =($data['table'])?  $data['table']: '';
-	  //$seat = ($data['seat'])?  $data['seat']: '';
+	  $table =($data['table'])?  $data['table']: ''; 
 			$waiter = ($data['waiter'])?  $data['waiter']: '';
-
-
 
 	$User = new User('users');
  	$Query  = $User->findByToken($token);
@@ -669,6 +664,13 @@ $date = date("Y-m-d");
 			//get orders by receipt
 	$Orderdetail = new Orderdetail('orderdetails');
 	$Sale = new Sale('sales');
+	
+			$getParams  = ['conditions'=> ['shopId = ?', 'period = ?'], 'bind' => [$shopId, $date] ];
+ 	$orderArray = $Sale->find($getParams); 
+	$order_number =  count($orderArray) + 1;
+	 
+
+	
 	$amount = 0;
 	$discount = 0;
 	$nhil = 0;
@@ -704,6 +706,7 @@ if($type == 'Dine-In'):
 									$fields = [
 																					'shopId' => $shopId,
 																					'invoice_number' => $invoice,
+																					'order_number' => $order_number,
 																					'amount' => $amount,//incase of discount, use this valu for total calc
 																					'discount' => $discount,
 																					'tid' => $table,
@@ -743,6 +746,7 @@ if($type == 'Dine-In'):
 								$fields = [
 																					'shopId' => $shopId,
 																					'invoice_number' => $invoice,
+																					'order_number' => $order_number,
 																					'amount' => $amount,//incase of discount, use this valu for total calc
 																					'discount' => $discount,
 																					'balance' => $balance,
@@ -833,7 +837,61 @@ $result = array();
 
 
 
-  public function fetchBasket()
+ //localPlusMinus
+public function localPlusMinus()
+{ 
+ $result = array();  
+	$Orderdetail = new Orderdetail('orderdetails');
+$Beedy = new Beedy();
+
+		$shopId= $_GET['shopId'];
+		$invoice= $_GET['invoice']; 
+ $plate = $_GET['plate'];
+	
+	 	$params  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
+			$array = $Orderdetail->find($params); 
+			$newPlate  = $Orderdetail->max('plate') +1;
+		//	find all order under sent
+			$sentParams = ['conditions'=> ['shopId = ?', 'invoice = ?', 'plate = ?'], 'bind' => [$shopId, $invoice, $plate]];
+				$orderInPlate = $Orderdetail->find($sentParams);
+		$count  = count($orderInPlate);
+		$i = 1;
+				foreach($orderInPlate as $VALUES)
+			{
+							$fields = [
+																		'menu_id' => $VALUES->menu_id,
+																		'qty' => $VALUES->qty,
+																		'invoice' => $invoice,
+																		'price' => $VALUES->price,//incase of discount, use this valu for total calc
+																		'total' => $VALUES->total,
+																		'nhil' => $VALUES->nhil,
+																		'fund' => $VALUES->fund,
+																		'vat' => $VALUES->vat,
+																		'plate' => $newPlate,
+																		'accept' => $VALUES->accept,
+																		'shopId' => $shopId,
+																		'created_at' => '',
+															];
+								//send menu
+									$send = $Orderdetail->insert($fields);
+									
+										if($i === $count):
+
+																		$result['status'] = "success";
+																		$result['msg']  =   'Order sent successfully';
+ 
+																	endif;
+ $i++;
+}
+ echo json_encode($result);
+			
+}
+
+
+ //redAddQuantity
+
+	
+	 public function fetchBasket()
 {
 	$data  = [];
 
@@ -860,6 +918,7 @@ $d = "PENDING";
 	$row = array(
 		'id'=>$Basket->id,
 		'invoice_number'=>$Basket->invoice_number,
+		'order_number'=> $Basket->order_number,
 		'amount'=> $Basket->amount,
 	'balance'=>$Basket->balance,
 		'table'=> $Table->findById($Basket->tid)->name,
@@ -966,6 +1025,8 @@ $del  = $Orderdetail->bulkDelete($params);
 	{
 		$result = array();
 				$id = $_GET['id'];
+				$ord_type = ($_GET['ord_type'])? $_GET['ord_type'] : 'No';
+				$plate = ($_GET['plate'])? $_GET['plate'] : 1;
 				$shopId=$_GET['shopId'] ;
 				$Menu = new Menu('menus');
 	$Orderdetail = new Orderdetail('orderdetails');
@@ -974,9 +1035,17 @@ $Beedy = new Beedy();
 				$data  = $Orderdetail->findById($id);
 
 
-		$params = ['conditions'=> ['shopId = ?', 'id = ?'], 'bind' => [$shopId,  $id]  ];
 
-$del  = $Orderdetail->bulkDelete($params);
+		if($ord_type === "Yes"):
+				$invoice = $_GET['invoice'];
+				$plateParams = ['conditions'=> ['shopId = ?', 'plate = ?', 'invoice = ?'], 'bind' => [$shopId,  $plate, $invoice ] ];
+				$del  = $Orderdetail->bulkDelete($plateParams);
+		else:
+				$params = ['conditions'=> ['shopId = ?', 'id = ?'], 'bind' => [$shopId,  $id]  ];
+				$del  = $Orderdetail->bulkDelete($params);
+
+	endif;
+
 	if($del):
 								$result['status'] = "success";
 								$result['msg']  =   'Item deleted from cart';
@@ -1148,7 +1217,7 @@ $item = [];
 						'fund'=>$Order->fund,
 						'nhil'=>$Order->nhil,
 						'nfund'=> $Order->fund+$Order->nhil,
-						//'total'=>$Order->total,
+						'plate'=>$Order->plate,
 						'created_at'=>$Order->created_at,
 						'updated_at'=>$Order->updated_at
 					);
@@ -1219,6 +1288,7 @@ foreach($Receivables as $Receivable):
 		'key'=>'key'.$i,
 		'id'=>$Receivable->id,
 		'invoice_number'=>$Receivable->invoice_number,
+		'order_number'=> $Receivable->order_number,
 		'amount'=> $Receivable->amount,
 	'balance'=>$Receivable->balance,
 		'table'=> $Table->findById($Receivable->tid)->name,
@@ -1270,7 +1340,7 @@ $User = new User('users');
 
 foreach($Receivables as $Receivable):
 	$invoice = $Receivable->invoice_number;
-	$orderNumber = $Receivable->id;
+	$orderNumber = $Receivable->order_number;
 	$tableName = $Table->findById($Receivable->tid)->name;
 	$orderType = $Receivable->ord_type;
 	$waiter = $User->findById($Receivable->waiter)->username;
@@ -1685,280 +1755,6 @@ $discountA =  $A->discount;
 		endif;
 		  echo json_encode($result);
 }
-
-
- public function salesReport()
-{
-	$data  = [];
-
-	$out = array('error' =>  false);
-	$Sale = new Sale('sales');
-
-	  $startDate = $_GET['startDate'];
-	  $endDate = $_GET['endDate'];
-	  //$startDate =  date_format(date_create($_GET['startDate']),"Y-m-d H:i:s") ;
-	  //$endDate =  date_format(date_create($_GET['endDate']),"Y-m-d H:i:s");
-	  $shopId = $_GET['shopId'];
-
-	$Beedy = new Beedy();
-	$Table = new HTable('htables');
-	//$Seat = new Seat('seats');
-	$User = new User('users');
-
-		$params  = ['conditions'=> ['shopId = ? ',  'period >= ? ',  'period <= ? '],
-														'bind' => [$shopId, $startDate, $endDate] ];
-	$Reports = $Sale->find($params);
-
-$i= 0;
-$totalAmount =  0;
-foreach($Reports as $Report):
-$totalAmount += round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2);
-	$row = array(
-		'key'=>'key'.$i,
-		'id'=>$Report->id,
-		'invoice_number'=>$Report->invoice_number,
-		'amount'=> round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2),
-		'status'=> $Report->status,
-		'period'=> $Report->period,
-	'balance'=>$Report->balance,
-		'table'=> $Table->findById($Report->tid)->name,
-	'ord_type'=>$Report->ord_type,
-	'waiter'=>	$User->findById($Report->waiter)->fullname,
-	'cashier'=>	$User->findById($Report->cashier)->fullname,
-		'created_at'=>$Report->created_at,
-		'created_by'=>	$User->findById($Report->created_by)->fullname,
-		'updated_by'=>$User->findById($Report->updated_by)->fullname,
-		'updated_at'=>$Report->updated_at
-	);
-
-	$data[]=$row;
-	$i+=1;
-	endforeach;
-
-	 	$out['data'] = $data;
-	 	$out['totalAmount'] = $totalAmount;
-    echo json_encode($out);
-
-  	die();
-
-}
-
-
-
-
-
-
- public function salesTrailReport()
-{
-	$data  = [];
-
-	$out = array('error' =>  false);
-	$Sale = new SalesTrail('salesTrails');
-
-	  $startDate = $_GET['startDate'];
-	  $endDate = $_GET['endDate'];
-	  $shopId = $_GET['shopId'];
-
-	$Beedy = new Beedy();
-	$Table = new HTable('htables');
-	$Seat = new Seat('seats');
-	$User = new User('users');
-
-		$params  = ['conditions'=> ['shopId = ? ',  'period >= ? ',  'period <= ? '],
-														'bind' => [$shopId, $startDate, $endDate] ];
-	$Reports = $Sale->find($params);
-
-$i= 0;
-foreach($Reports as $Report):
-
-	$row = array(
-		'key'=>'key'.$i,
-		'id'=>$Report->id,
-		'invoice_number'=>$Report->invoice_number,
-		'amount'=> round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2),
- 	'status'=> $Report->status,
-		'period'=> $Report->period,
-	'balance'=>$Report->balance,
-		'table'=> $Table->findById($Report->tid)->name,
-	'ord_type'=>$Report->ord_type,
-	'waiter'=>	$User->findById($Report->waiter)->fullname,
-	'cashier'=>	$User->findById($Report->cashier)->fullname,
-		'created_at'=>$Report->created_at,
-		'created_by'=>	$User->findById($Report->created_by)->fullname,
-		'updated_by'=>$User->findById($Report->updated_by)->fullname,
-		'updated_at'=>$Report->updated_at
-	);
-
-	$data[]=$row;
-	$i+=1;
-	endforeach;
-
-	 	$out['data'] = $data;
-    echo json_encode($out);
-
-  	die();
-
-}
-
-
-
-
-
-
-
-
-
-public function departmentReport()
-{
-	$data  = [];
-
-	$out = array('error' =>  false);
-	$Sale = new Sale('sales');
-	$Menu = new Menu('menus');
-	$Category = new Category('categories');
-	$Kitchen = new Kitchen('kitchens');
-	$Orderdetail = new Orderdetail('orderdetails');
-
-	  $startDate = $_GET['startDate'];
-	  $endDate = $_GET['endDate'];
-	  $shopId = $_GET['shopId'];
-
-	$Beedy = new Beedy();
-	$Table = new HTable('htables');
-	$User = new User('users');
-
-
-$sales_order = array();
-  $price_order = array();
-$nhil_price = array();
-  $fund_price = array();
-$vat_price = array();
-
-
-		$params  = ['conditions'=> ['shopId = ? ',  'period >= ? ',  'period <= ? '],
-														'bind' => [$shopId, $startDate, $endDate] ];
-	$InvoiceList = $Sale->find($params);
-
-
-		foreach($InvoiceList as $LIST):
-
-			$invoice = $LIST->invoice_number;
-		//get products under this invoice
-		//count each product
-
-				$OrderParams  = ['conditions'=> ['shopId = ?', 'invoice = ?'], 'bind' => [$shopId, $invoice] ];
-
-				//check order details based on invoice
-			$Orders =  $Orderdetail->find($OrderParams);
-
-				//loop through the order
-								foreach($Orders as $Order):
-								//while($Order = $Orders->fetch()){
-
-											if(array_key_exists(  $Order->menu_id , $sales_order) ):
-
-															$sales_order[ $Order->menu_id] += $Order->qty;
-															$price_order[  $Order->menu_id] += $Order->total;
-															$nhil_price[  $Order->menu_id] += $Order->nhil;
-															$fund_price[ $Order->menu_id] += $Order->fund;
-															$vat_price[  $Order->menu_id] += $Order->vat;
-
-
-										else:
-														$sales_order[  $Order->menu_id]  = $Order->qty;
-														$price_order[ $Order->menu_id]  = $Order->total;
-														$nhil_price[  $Order->menu_id] = $Order->nhil;
-															$fund_price[ $Order->menu_id] = $Order->fund;
-															$vat_price[  $Order->menu_id] = $Order->vat;
-
-											endif;
-								//}
-								endforeach;
-	endforeach;
-
-
-
-$total_qty = 0;
-$total_amount = 0;
-
-$i= 0;
-foreach($sales_order as $key => $val){
-$p =  $Beedy->getColById($Menu,   $key, 'item') ;
-$main =  $Beedy->getColById($Kitchen, $Beedy->getColById($Category, $Beedy->getColById($Menu, $key, 'catId'), 'kitchenId'), 'name') ;
-//$left =  $Beedy->getColById($Menu, $key, 'qty');
-
-	$row = array(
-		'key'=>'key'.$i,
-		'menu_id'=> $Order->menu_id,
-		'menu_name'=> $p,
-	 'sold'=>$val,
-	 'kitchen'=>$main,
-		'normalPrice'=>round($price_order[$key],2),
-		'price'=>round($nhil_price[$key] + $fund_price[$key] + $vat_price[$key] + $price_order[$key],2)
-	);
-
-	$data[]=$row;
-
-	$i+=1;
-}
-
- 	$out['data'] = $data;
-
-	 	$out['sales'] = $sales_order; //qty per products
-	 	$out['price'] = $price_order;
-    echo json_encode($out);
-
-  	die();
-
-}
-
-
-
-
- public function staffReport()
-{
-	 $data  = [];
-
-	$out = array('error' =>  false);
-	$Sale = new Sale('sales');
-
-	  $staff = $_GET['staff'];
-	  $shopId = $_GET['shopId'];
-
-	$Beedy = new Beedy();
-
-		$params  = ['conditions'=> ['shopId = ? ',  'created_by= ? '],
-														'bind' => [$shopId, $staff] ];
-	$Reports = $Sale->find($params);
-
-$i= 0;
-foreach($Reports as $Report):
-
-	$row = array(
-		'key'=>'key'.$i,
-		'id'=>$Report->id,
-		'invoice_number'=>$Report->invoice_number,
-		'amount'=> round($Report->amount + $Report->nhil + $Report->fund + $Report->vat,2),
-		'status'=> $Report->status,
-		'period'=> $Report->period,
-	'ord_type'=>$Report->ord_type,
-		//'kitchen'=>$Report->kitchen
-	);
-
-	$data[]=$row;
-	$i+=1;
-	endforeach;
-
-	 	$out['data'] = $data;
-    echo json_encode($out);
-
-  	die();
-
-}
-
-
-
-
 
 
 
